@@ -15,6 +15,7 @@ WinAPI интерфейс взаимодействия приложений с ОС, как с программой
 Снижается популярность WinAPI  в контексте разработки именно
 оконных приложений НО WinAPI не только окна
 
+---------------
 Сообщения
 
 CPU (Central Processor Unit) АЛУ (арифметико логическое устройство)
@@ -28,3 +29,71 @@ CPU (Central Processor Unit) АЛУ (арифметико логическое устройство)
 
 Приложения в ОС работают по принципу ожидания сообщений находятся в 
 бескончном цикле ожидания - перевода обработки системных сообщений
+
+------------
+
+
+Структура оконного приложения
+
+wWinMain(
+	_In_ HINSTANCE hInstance, // дескриптор программы (номер(ID) процесса в ОС)
+	_In_opt_ HINSTANCE hPrevInstance, // дескриптор пред. запуска (если есть)
+	_In_ LPWSTR    lpCmdLine, // агрументы командной строки
+	_In_ int       nCmdShow  // начальный режим отображения
+)
+
+Регистация класса окна 
+Создание окна
+Запуск цикла сообщений
+
+
+ RegisterClassExW(// регстрация класса окна. В ООП синоним описания класса
+ &wcex //структура класс окна
+ );
+
+
+ WNDCLASSEXW wcex;
+
+	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.lpfnWndProc = WndProc;
+	wcex.cbWndExtra = 0;
+	wcex.hInstance = hInstance;
+	wcex.lpszClassName = szWindowClass;
+	
+
+Оконная процедура WndProc, тело которой большой switch анализирующий сообщения
+
+
+
+Обьект окна
+
+
+ CreateWindowW( // hWnd = new WinWlass
+		szWindowClass, // имя класса
+		szTitle, //заоловок окна (надпись слева-верха)
+		WS_OVERLAPPEDWINDOW,
+		CW_USEDEFAULT,
+		0,
+		200,//ширина окна
+		200, // высота окна
+		nullptr,
+		nullptr,
+		hInstance,
+		nullptr);
+
+
+--------------------------
+
+Кодировка
+
+В Windows присутствуют 2 кодировки : ANSI (A), Unicode (W - wchar_t)
+
+Все фугнкции WinAPI доступны в двух вариантах:
+CreateWindowA(...)
+CreateWindowW(...)
+через #define определяется CreateWindow, принемающий решение
+в зависимости от #define UNICODE
+
+Рекомендация - -использовать W версии, не использовать автоподстановку
+
+
