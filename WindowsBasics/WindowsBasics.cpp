@@ -4,6 +4,7 @@
 #include "framework.h"
 #include "WindowsBasics.h"
 
+
 #define MAX_LOADSTRING 100
 
 // Global Variables:
