@@ -71,17 +71,17 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 
 	wcex.cbSize = sizeof(WNDCLASSEX); //size of the structure
 
-	wcex.style = CS_HREDRAW | CS_VREDRAW; //
+	wcex.style = CS_HREDRAW | CS_VREDRAW; 
 	wcex.lpfnWndProc = WndProc; // function that process messages sent to window https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
 	wcex.cbClsExtra = 0; //the number of extra bytes
 	wcex.cbWndExtra = 0; //the number of extra bytes
 	wcex.hInstance = hInstance; 
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSBASICS)); // handle to an icon resource if NULL=> default icon
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW); // handle to a cursor resource
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+2); //
-	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WINDOWSBASICS);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+2); //handle to the class background brush
+	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WINDOWSBASICS); 
 	wcex.lpszClassName = szWindowClass;
-	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
+	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL)); //handle to a small icon
 
 	return RegisterClassExW(&wcex);
 }
