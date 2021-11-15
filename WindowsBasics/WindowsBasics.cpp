@@ -3,7 +3,7 @@
 
 #include "framework.h"
 #include "WindowsBasics.h"
-#include <iostream>
+
 
 #define MAX_LOADSTRING 100
 
@@ -38,6 +38,9 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 		return FALSE;
 	}
+
+	MessageBoxA(NULL,(char*)((wchar_t*)"Hello World!"), (char*)((wchar_t*)"message"),MB_OK);
+
 
 	MSG msg;
 
