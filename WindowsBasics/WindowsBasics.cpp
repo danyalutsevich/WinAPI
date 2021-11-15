@@ -76,7 +76,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSBASICS));
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 1);
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WINDOWSBASICS);
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -100,12 +100,12 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	HWND hWnd = CreateWindowW( // hWnd = new WinWlass
 		szWindowClass, //
-		L"Hello world!",
+		L"I've changed this title",
 		WS_OVERLAPPEDWINDOW,
 		CW_USEDEFAULT,
 		0,
-		CW_USEDEFAULT,
-		0,
+		640,
+		480,
 		nullptr,
 		nullptr,
 		hInstance,
