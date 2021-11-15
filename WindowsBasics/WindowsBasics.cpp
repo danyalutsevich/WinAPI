@@ -65,24 +65,47 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 //
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/ns-winuser-wndclassexw
+
 	WNDCLASSEXW wcex;
 
-	wcex.cbSize = sizeof(WNDCLASSEX);
+	wcex.cbSize = sizeof(WNDCLASSEX); //size of the structure
 
-	wcex.style = CS_HREDRAW | CS_VREDRAW;
-	wcex.lpfnWndProc = WndProc;
-	wcex.cbClsExtra = 0;
-	wcex.cbWndExtra = 0;
-	wcex.hInstance = hInstance;
-	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSBASICS));
-	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 2);
+	wcex.style = CS_HREDRAW | CS_VREDRAW; //
+	wcex.lpfnWndProc = WndProc; // function that process messages sent to window https://docs.microsoft.com/en-us/previous-versions/windows/desktop/legacy/ms633573(v=vs.85)
+	wcex.cbClsExtra = 0; //the number of extra bytes
+	wcex.cbWndExtra = 0; //the number of extra bytes
+	wcex.hInstance = hInstance; 
+	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_WINDOWSBASICS)); // handle to an icon resource if NULL=> default icon
+	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW); // handle to a cursor resource
+	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW+2); //
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_WINDOWSBASICS);
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
 
 	return RegisterClassExW(&wcex);
 }
+
+/*COLOR_ACTIVEBORDER
+COLOR_ACTIVECAPTION
+COLOR_APPWORKSPACE
+COLOR_BACKGROUND
+COLOR_BTNFACE
+COLOR_BTNSHADOW
+COLOR_BTNTEXT
+COLOR_CAPTIONTEXT
+COLOR_GRAYTEXT
+COLOR_HIGHLIGHT
+COLOR_HIGHLIGHTTEXT
+COLOR_INACTIVEBORDER
+COLOR_INACTIVECAPTION
+COLOR_MENU
+COLOR_MENUTEXT
+COLOR_SCROLLBAR
+COLOR_WINDOW
+COLOR_WINDOWFRAME
+COLOR_WINDOWTEXT*/
+
 
 //
 //   FUNCTION: InitInstance(HINSTANCE, int)
@@ -98,15 +121,16 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // Store instance handle in our global variable
 
+	//https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-createwindowa
 	HWND hWnd = CreateWindowW( // hWnd = new WinWlass
 		szWindowClass, //
 		L"I've changed this title",
 		WS_OVERLAPPEDWINDOW,
-		CW_USEDEFAULT,
-		0,
-		640,
-		480,
-		nullptr,
+		CW_USEDEFAULT,//window position x
+		0,//window position y
+		640,// window height
+		480,// window width
+		nullptr,//parent or owner window
 		nullptr,
 		hInstance,
 		nullptr);
