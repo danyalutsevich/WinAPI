@@ -9,12 +9,18 @@
 #define CMD_BUTTON_PRESS_ME 1001
 #define CMD_BUTTON_PLUS 1002
 #define CMD_BUTTON_MINUS 1003
+#define CMD_BUTTON_PLUSTEN 1004
+#define CMD_BUTTON_MINUSTEN 1005
+#define CMD_BUTTON_RESET 1006
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 HWND hStatic1;
 HWND inc;
+HWND incTen;
 HWND dec;
+HWND decTen;
+HWND reset;
 HWND mainWindow;
 
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
@@ -27,9 +33,8 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 
 void createEX();
-//void processEX();
-void processEX_PLUS();
-void processEX_MINUS();
+void processEX(int num);
+void processEXReset();
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -190,7 +195,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		createEX();
 
 	
-		CreateWindowW(L"Button", L"Press me", WS_VISIBLE | WS_CHILD, (640/2)-75/2, (480/2)-23/2, 75, 23, hWnd, (HMENU)CMD_BUTTON_PRESS_ME, hInst, NULL);
+		//CreateWindowW(L"Button", L"Press me", WS_VISIBLE | WS_CHILD, (640/2)-75/2, (480/2)-23/2, 75, 23, hWnd, (HMENU)CMD_BUTTON_PRESS_ME, hInst, NULL);
 		break;
 	case WM_COMMAND:
 	{
@@ -209,14 +214,25 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			break;
 		case CMD_BUTTON_PLUS:
-
-			processEX_PLUS();
+		
+			processEX(1);
 
 			break;
 		case CMD_BUTTON_MINUS:
 
-			processEX_MINUS();
+			processEX(-1);
 
+			break;
+		case CMD_BUTTON_PLUSTEN:
+			
+			processEX(10);
+			break;
+		case CMD_BUTTON_MINUSTEN:
+			
+			processEX(-10);
+			break;
+		case CMD_BUTTON_RESET:
+			processEXReset();
 			break;
 
 		case IDM_EXIT:
@@ -250,41 +266,40 @@ void createEX() {
 
 	hStatic1 = CreateWindowW(
 		L"Static",//class name
-		L"Hello World!", //title
+		L"0", //title
 		WS_VISIBLE | WS_CHILD,//style
-		10, 10, //x y
-		200, 20,
+		(640 / 2) - 75 / 2, (480 / 2) - 23 / 2, //x y
+		75, 23,
 		mainWindow,//parent window
 		0,//menu command - no
 		hInst,//instanse handle
 		NULL);//extra params struct
 
-	inc= CreateWindowW(L"Button", L"++", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, (480 / 2) - 100 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUS, hInst, NULL);
-	dec= CreateWindowW(L"Button", L"--", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, (480 / 2) +50, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUS, hInst, NULL);
+	inc= CreateWindowW(L"Button", L"++", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2+100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUS, hInst, NULL);
+	incTen= CreateWindowW(L"Button", L"+10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2+200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUSTEN, hInst, NULL);
+	dec= CreateWindowW(L"Button", L"--", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2-100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUS, hInst, NULL);
+	decTen= CreateWindowW(L"Button", L"-10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2-200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUSTEN, hInst, NULL);
+	reset= CreateWindowW(L"Button", L"Reset", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 300, 75, 23, mainWindow, (HMENU)CMD_BUTTON_RESET, hInst, NULL);
+
 }
 
-void processEX_PLUS() {
+void processEX(int num) {
+
 	WCHAR  str[MAX_LOADSTRING];
 	SendMessageW(hStatic1,WM_GETTEXT,MAX_LOADSTRING,(LPARAM)str);
+	
 	int n = _wtoi(str);
-	n++;
+	
+	n+=num;
 	_itow_s(n,str,MAX_LOADSTRING,10);
 
-	SendMessageA(hStatic1, WM_SETTEXT, 0, (LPARAM)str);
+	SendMessageW(hStatic1, WM_SETTEXT, 0, (LPARAM)str);
 
 
 
 }
 
-void processEX_MINUS() {
-	WCHAR  str[MAX_LOADSTRING];
-	SendMessageW(hStatic1, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)str);
-	int n = _wtoi(str);
-	n--;
-	_itow_s(n, str, MAX_LOADSTRING, 10);
+void processEXReset() {
 
-	SendMessageA(hStatic1, WM_SETTEXT, 0, (LPARAM)str);
-
-
-
+	SendMessageW(hStatic1, WM_SETTEXT, 0, (LPARAM)"0");
 }
