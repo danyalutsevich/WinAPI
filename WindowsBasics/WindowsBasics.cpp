@@ -57,9 +57,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 		return FALSE;
 	}
 
-	//MessageBoxA(NULL, (char*)((wchar_t*)"Hello World!"), (char*)((wchar_t*)"message"), MB_OK);
-
-
 	MSG msg;
 
 	// Main message loop:
@@ -176,43 +173,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	static int count = 0;
-	std::string charct1er = std::to_string(count);
+
 	mainWindow = hWnd;
 	switch (message)
 	{
 	case WM_CREATE:
-		//hStatic1=CreateWindowW(
-		//	L"Static",//class name
-		//	L"Hello World!", //title
-		//	WS_VISIBLE|WS_CHILD,//style
-		//	10,10, //x y
-		//	200,20,
-		//	hWnd,//parent window
-		//	0,//menu command - no
-		//	hInst,//instanse handle
-		//	NULL);//extra params struct
+	
 		createEX();
 
-	
-		//CreateWindowW(L"Button", L"Press me", WS_VISIBLE | WS_CHILD, (640/2)-75/2, (480/2)-23/2, 75, 23, hWnd, (HMENU)CMD_BUTTON_PRESS_ME, hInst, NULL);
 		break;
+
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case CMD_BUTTON_PRESS_ME:
-		
-			/*MessageBeep(MB_OK);
-			
-			count++;
-			SendMessageA(hStatic1,WM_SETTEXT,0,(LPARAM)((wchar_t*)charct1er.c_str()));*/
-
-			//processEX();
-
-			break;
+	
 		case CMD_BUTTON_PLUS:
 		
 			processEX(1);
