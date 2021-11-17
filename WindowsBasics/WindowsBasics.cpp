@@ -294,9 +294,26 @@ void processEXReset() {
 
 LRESULT CALLBACK    WndProcControls(HWND, UINT, WPARAM, LPARAM);
 
+void createControls(HWND);
+
+//////////////////////
+#define CMD_CHECKBOX 2001
+#define CMD_PUSHLIKE 2002
+
+
+//////////////////////
+
+HWND hwndCHECKBOX;
+HWND hwndPUSHLIKE;
+
+
+
 void showWindowControls() {
 
 	//Register class;
+	//WndProc
+	//CreateWindow
+	srand(time(0));
 	if (!isControlsReg) {
 
 		WNDCLASSEXW wcex;
@@ -304,7 +321,7 @@ void showWindowControls() {
 		wcex.cbSize = sizeof(WNDCLASSEX);
 		wcex.lpfnWndProc = WndProcControls;
 		wcex.hInstance = hInst;
-		wcex.hbrBackground = CreateSolidBrush(RGB(rand() % 255, 0, 0))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
+		wcex.hbrBackground = CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
 		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 		wcex.lpszClassName = L"ControlsWindow";
 
@@ -327,9 +344,52 @@ LRESULT CALLBACK    WndProcControls(HWND hWnd, UINT message, WPARAM wParam, LPAR
 	switch (message)
 	{
 	case WM_CREATE:
-
+		createControls(hWnd);
 		break;
 
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+
+		switch (wmId)
+		{
+		case CMD_CHECKBOX: {
+
+			LRESULT state = SendMessageW(hwndCHECKBOX, BM_GETCHECK, 0, 0);
+			if (state == BST_CHECKED) {
+
+				SendMessageW(hwndCHECKBOX, BM_SETCHECK, BST_UNCHECKED, 0);
+				SendMessageW(hwndCHECKBOX, WM_KILLFOCUS, 0, 0);
+			}
+			else {
+
+				SendMessageW(hwndCHECKBOX, BM_SETCHECK, BST_CHECKED, 0);
+				SendMessageW(hwndCHECKBOX, WM_KILLFOCUS, 0, 0);
+
+			}
+		}
+			break;
+		case CMD_PUSHLIKE: {
+
+			LRESULT state = SendMessageW(hwndPUSHLIKE, BM_GETCHECK, 0, 0);
+			if (state == BST_CHECKED) {
+
+				SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_UNCHECKED, 0);
+				SendMessageW(hwndPUSHLIKE, WM_KILLFOCUS, 0, 0);
+			}
+			else {
+
+				SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_CHECKED, 0);
+				SendMessageW(hwndPUSHLIKE, WM_KILLFOCUS, 0, 0);
+
+			}
+		/*	SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_CHECKED, 0);*/
+		}
+
+			break;
+		}
+		break;
+	}
 	case WM_DESTROY:
 		//PostQuitMessage(0);
 		break;
@@ -338,6 +398,19 @@ LRESULT CALLBACK    WndProcControls(HWND hWnd, UINT message, WPARAM wParam, LPAR
 		return DefWindowProc(hWnd, message, wParam, lParam);
 	}
 	return 0;
+}
+
+void createControls(HWND hWnd) {
+
+
+	CreateWindowW(L"Button", L"Buttons", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 10, 10, 380, 200, hWnd, NULL, hInst, 0);
+	CreateWindowW(L"Button", L"Push", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 25, 35, 75, 23, hWnd, NULL, hInst, 0);
+	CreateWindowW(L"Button", L"Def", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP, 25, 65, 75, 23, hWnd, NULL, hInst, 0);
+	CreateWindowW(L"Button", L"PushLike", WS_CHILD | WS_VISIBLE | BS_PUSHLIKE, 25, 95, 75, 23, hWnd, NULL, hInst, 0);
+	hwndCHECKBOX =CreateWindowW(L"Button", L"CheckBox", WS_CHILD | WS_VISIBLE | BS_CHECKBOX, 25, 125, 75, 23, hWnd, (HMENU)CMD_CHECKBOX, hInst, 0);
+	hwndPUSHLIKE=CreateWindowW(L"Button", L"Check PushLike", WS_CHILD | WS_VISIBLE | BS_CHECKBOX|BS_PUSHLIKE, 25, 155, 75, 23, hWnd, (HMENU)CMD_PUSHLIKE, hInst, 0);
+
+
 }
 
 
