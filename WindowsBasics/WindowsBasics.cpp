@@ -21,7 +21,9 @@ HWND incTen;
 HWND dec;
 HWND decTen;
 HWND reset;
+HWND pressME;
 HWND mainWindow;
+BOOL isControlsReg;
 
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 //WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
@@ -33,8 +35,11 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 
 void createEX();
-void processEX(int num);
+void processEX(int);
 void processEXReset();
+void showWindowControls();
+
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -44,6 +49,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(hPrevInstance);
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
+	isControlsReg = FALSE;
 	// TODO: Place code here.
 
 	// Initialize global strings
@@ -64,7 +70,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	{
 
 		TranslateMessage(&msg);
-			DispatchMessage(&msg);
+		DispatchMessage(&msg);
 
 	}
 
@@ -178,7 +184,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_CREATE:
-	
+
 		createEX();
 
 		break;
@@ -189,9 +195,16 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
-	
+		case CMD_BUTTON_PRESS_ME:
+			while (true) {
+
+			showWindowControls();
+			}
+
+			break;
+
 		case CMD_BUTTON_PLUS:
-		
+
 			processEX(1);
 
 			break;
@@ -201,11 +214,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			break;
 		case CMD_BUTTON_PLUSTEN:
-			
+
 			processEX(10);
 			break;
 		case CMD_BUTTON_MINUSTEN:
-			
+
 			processEX(-10);
 			break;
 		case CMD_BUTTON_RESET:
@@ -244,7 +257,7 @@ void createEX() {
 	hStatic1 = CreateWindowW(
 		L"Static",//class name
 		L"0", //title
-		WS_VISIBLE | WS_CHILD,//style
+		WS_VISIBLE | WS_CHILD | DT_CENTER,//style
 		(640 / 2) - 75 / 2, (480 / 2) - 23 / 2, //x y
 		75, 23,
 		mainWindow,//parent window
@@ -252,27 +265,25 @@ void createEX() {
 		hInst,//instanse handle
 		NULL);//extra params struct
 
-	inc= CreateWindowW(L"Button", L"++", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2+100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUS, hInst, NULL);
-	incTen= CreateWindowW(L"Button", L"+10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2+200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUSTEN, hInst, NULL);
-	dec= CreateWindowW(L"Button", L"--", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2-100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUS, hInst, NULL);
-	decTen= CreateWindowW(L"Button", L"-10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2-200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUSTEN, hInst, NULL);
-	reset= CreateWindowW(L"Button", L"Reset", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 300, 75, 23, mainWindow, (HMENU)CMD_BUTTON_RESET, hInst, NULL);
-
+	inc = CreateWindowW(L"Button", L"++", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2 + 100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUS, hInst, NULL);
+	incTen = CreateWindowW(L"Button", L"+10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2 + 200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PLUSTEN, hInst, NULL);
+	dec = CreateWindowW(L"Button", L"--", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2 - 100, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUS, hInst, NULL);
+	decTen = CreateWindowW(L"Button", L"-10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2 - 200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUSTEN, hInst, NULL);
+	reset = CreateWindowW(L"Button", L"Reset", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 300, 75, 23, mainWindow, (HMENU)CMD_BUTTON_RESET, hInst, NULL);
+	pressME = CreateWindowW(L"Button", L"Press me", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 265, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PRESS_ME, hInst, NULL);
 }
 
 void processEX(int num) {
 
 	WCHAR  str[MAX_LOADSTRING];
-	SendMessageW(hStatic1,WM_GETTEXT,MAX_LOADSTRING,(LPARAM)str);
-	
+	SendMessageW(hStatic1, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)str);
+
 	int n = _wtoi(str);
-	
-	n+=num;
-	_itow_s(n,str,MAX_LOADSTRING,10);
+
+	n += num;
+	_itow_s(n, str, MAX_LOADSTRING, 10);
 
 	SendMessageW(hStatic1, WM_SETTEXT, 0, (LPARAM)str);
-
-
 
 }
 
@@ -280,3 +291,54 @@ void processEXReset() {
 
 	SendMessageW(hStatic1, WM_SETTEXT, 0, (LPARAM)"0");
 }
+
+LRESULT CALLBACK    WndProcControls(HWND, UINT, WPARAM, LPARAM);
+
+void showWindowControls() {
+
+	//Register class;
+	if (!isControlsReg) {
+
+		WNDCLASSEXW wcex;
+		ZeroMemory(&wcex, sizeof(WNDCLASSEXW));
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		wcex.lpfnWndProc = WndProcControls;
+		wcex.hInstance = hInst;
+		wcex.hbrBackground=CreateSolidBrush(RGB(rand()%255,0,0))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
+		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wcex.lpszClassName = L"ControlsWindow";
+
+		if (!RegisterClassExW(&wcex)) {
+			MessageBoxW(mainWindow, L"Register class error!", L"Error", MB_OK | MB_ICONERROR);
+			return;
+		}
+		isControlsReg = TRUE;
+	}
+
+	//3
+	HWND controlsWindow = CreateWindowW(L"ControlsWindow", L"Controls", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, mainWindow, NULL, hInst, 0);
+
+	ShowWindow(controlsWindow, SW_NORMAL);
+
+}
+
+LRESULT CALLBACK    WndProcControls(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+
+	switch (message)
+	{
+	case WM_CREATE:
+
+		break;
+
+	case WM_DESTROY:
+		//PostQuitMessage(0);
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+
+
