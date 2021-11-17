@@ -196,10 +196,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		switch (wmId)
 		{
 		case CMD_BUTTON_PRESS_ME:
-			while (true) {
+
 
 			showWindowControls();
-			}
+
 
 			break;
 
@@ -304,7 +304,7 @@ void showWindowControls() {
 		wcex.cbSize = sizeof(WNDCLASSEX);
 		wcex.lpfnWndProc = WndProcControls;
 		wcex.hInstance = hInst;
-		wcex.hbrBackground=CreateSolidBrush(RGB(rand()%255,0,0))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
+		wcex.hbrBackground = CreateSolidBrush(RGB(rand() % 255, 0, 0))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
 		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
 		wcex.lpszClassName = L"ControlsWindow";
 
