@@ -360,15 +360,17 @@ LRESULT CALLBACK    WndProcControls(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
 				SendMessageW(hwndCHECKBOX, BM_SETCHECK, BST_UNCHECKED, 0);
 				SendMessageW(hwndCHECKBOX, WM_KILLFOCUS, 0, 0);
+				SendMessageW(hwndCHECKBOX, WM_SETTEXT, 0, (LPARAM)L"unchecked");
 			}
 			else {
 
 				SendMessageW(hwndCHECKBOX, BM_SETCHECK, BST_CHECKED, 0);
 				SendMessageW(hwndCHECKBOX, WM_KILLFOCUS, 0, 0);
+				SendMessageW(hwndCHECKBOX, WM_SETTEXT, 0, (LPARAM)L"checked");
 
 			}
 		}
-			break;
+						 break;
 		case CMD_PUSHLIKE: {
 
 			LRESULT state = SendMessageW(hwndPUSHLIKE, BM_GETCHECK, 0, 0);
@@ -376,17 +378,19 @@ LRESULT CALLBACK    WndProcControls(HWND hWnd, UINT message, WPARAM wParam, LPAR
 
 				SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_UNCHECKED, 0);
 				SendMessageW(hwndPUSHLIKE, WM_KILLFOCUS, 0, 0);
+				SendMessageW(hwndPUSHLIKE, WM_SETTEXT, 0, (LPARAM)L"unchecked");
 			}
 			else {
 
 				SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_CHECKED, 0);
 				SendMessageW(hwndPUSHLIKE, WM_KILLFOCUS, 0, 0);
+				SendMessageW(hwndPUSHLIKE, WM_SETTEXT, 0, (LPARAM)L"checked");
 
 			}
-		/*	SendMessageW(hwndPUSHLIKE, BM_SETCHECK, BST_CHECKED, 0);*/
+
 		}
 
-			break;
+						 break;
 		}
 		break;
 	}
@@ -407,8 +411,8 @@ void createControls(HWND hWnd) {
 	CreateWindowW(L"Button", L"Push", WS_CHILD | WS_VISIBLE | BS_PUSHBUTTON, 25, 35, 75, 23, hWnd, NULL, hInst, 0);
 	CreateWindowW(L"Button", L"Def", WS_CHILD | WS_VISIBLE | BS_DEFPUSHBUTTON | WS_TABSTOP, 25, 65, 75, 23, hWnd, NULL, hInst, 0);
 	CreateWindowW(L"Button", L"PushLike", WS_CHILD | WS_VISIBLE | BS_PUSHLIKE, 25, 95, 75, 23, hWnd, NULL, hInst, 0);
-	hwndCHECKBOX =CreateWindowW(L"Button", L"CheckBox", WS_CHILD | WS_VISIBLE | BS_CHECKBOX, 25, 125, 75, 23, hWnd, (HMENU)CMD_CHECKBOX, hInst, 0);
-	hwndPUSHLIKE=CreateWindowW(L"Button", L"Check PushLike", WS_CHILD | WS_VISIBLE | BS_CHECKBOX|BS_PUSHLIKE, 25, 155, 75, 23, hWnd, (HMENU)CMD_PUSHLIKE, hInst, 0);
+	hwndCHECKBOX = CreateWindowW(L"Button", L"unchecked", WS_CHILD | WS_VISIBLE | BS_CHECKBOX, 25, 125, 75, 23, hWnd, (HMENU)CMD_CHECKBOX, hInst, 0);
+	hwndPUSHLIKE = CreateWindowW(L"Button", L"unchecked", WS_CHILD | WS_VISIBLE | BS_CHECKBOX | BS_PUSHLIKE, 25, 155, 75, 23, hWnd, (HMENU)CMD_PUSHLIKE, hInst, 0);
 
 
 }
