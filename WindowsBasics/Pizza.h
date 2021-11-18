@@ -4,7 +4,7 @@
 
 LRESULT CALLBACK    WndProcPizza(HWND, UINT, WPARAM, LPARAM);
 
-void createPizza(HWND);
+void createPizza(HWND,HDC);
 void showWindowPizza(HINSTANCE hInstance, HWND mainWindow);
 
 HINSTANCE hInstP;
@@ -12,9 +12,14 @@ BOOL isPizzaReg;
 
 ////////////////////////
 #define CMD_BUTTON_PIZZA
+#define CMD_SIZE50 3000
+#define CMD_SIZE40 3001
+#define CMD_SIZE30 3002
 
 ///////////////////
-
+HWND hwndSIZE50;
+HWND hwndSIZE40;
+HWND hwndSIZE30;
 
 
 void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
@@ -57,7 +62,7 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch (message)
 	{
 	case WM_CREATE:
-		createPizza(hWnd);
+		createPizza(hWnd,(HDC)wParam);
 		break;
 
 	case WM_COMMAND:
@@ -66,7 +71,28 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 		switch (wmId)
 		{
+		case CMD_SIZE50:
 
+			SendMessageW(hwndSIZE50, BM_SETCHECK, BST_CHECKED, 0);
+			SendMessageW(hwndSIZE40, BM_SETCHECK, BST_UNCHECKED, 0);
+			SendMessageW(hwndSIZE30, BM_SETCHECK, BST_UNCHECKED, 0);
+
+
+			break;
+		case CMD_SIZE40:
+
+			SendMessageW(hwndSIZE50, BM_SETCHECK, BST_UNCHECKED, 0);
+			SendMessageW(hwndSIZE40, BM_SETCHECK, BST_CHECKED, 0);
+			SendMessageW(hwndSIZE30, BM_SETCHECK, BST_UNCHECKED, 0);
+
+			break;
+		case CMD_SIZE30:
+			
+			SendMessageW(hwndSIZE50, BM_SETCHECK, BST_UNCHECKED, 0);
+			SendMessageW(hwndSIZE40, BM_SETCHECK, BST_UNCHECKED, 0);
+			SendMessageW(hwndSIZE30, BM_SETCHECK, BST_CHECKED, 0);
+
+			break;
 
 
 		}
@@ -81,12 +107,7 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return 0;
 }
 
-
-
-
-
-
-void createPizza(HWND hWnd) {
+void createPizza(HWND hWnd,HDC wParam) {
 
 
 
@@ -98,18 +119,34 @@ void createPizza(HWND hWnd) {
 
 	
 	
-	CreateWindowW(L"Button", L"Pizza", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 10, 10, 400, 300, hWnd, NULL, hInst, 0);
+	CreateWindowW(L"Button", L"Pizza", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 10, 10, 400, 300, hWnd, NULL, hInst, 0);	
+	CreateWindowW(L"Static", L"Your name:", WS_VISIBLE | WS_CHILD , 20, 30, 125, 23, hWnd, NULL, hInstP, NULL);
+	CreateWindowW(L"Edit", L"", WS_CHILD | WS_VISIBLE, 20, 60, 125, 23, hWnd, (HMENU)CMD_COMBOBOX, hInst, 0);
 
-	CreateWindowW(L"Static", L"Choose pizza", WS_VISIBLE | WS_CHILD, 20, 30, 125, 23, hWnd, NULL, hInstP, NULL);
+	hwndSIZE50 = CreateWindowW(L"Button", L"50 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 90, 75, 23, hWnd, (HMENU)CMD_SIZE50, hInst, 0);
+	hwndSIZE40 = CreateWindowW(L"Button", L"40 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 120, 75, 23, hWnd, (HMENU)CMD_SIZE40, hInst, 0);
+	hwndSIZE30 = CreateWindowW(L"Button", L"30 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 150, 75, 23, hWnd, (HMENU)CMD_SIZE30, hInst, 0);
 
-	hwndCOMBOBOX = CreateWindowW(L"Combobox", L"Combox", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST, 20, 60, 125, 75, hWnd, (HMENU)CMD_COMBOBOX, hInstP, 0);
+
+
+	CreateWindowW(L"Static", L"Choose pizza", WS_VISIBLE | WS_CHILD , 270, 170, 125, 23, hWnd, NULL, hInstP, NULL);
+	
+	hwndCOMBOBOX = CreateWindowW(L"Combobox", L"Combox", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_HSCROLL | WS_VSCROLL, 270, 200, 125, 150, hWnd, (HMENU)CMD_COMBOBOX, hInstP, 0);
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Neapolitan Pizza");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Chicago Pizza");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Detroit Pizza");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"California Pizza");
-
-
-
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Sicilian Pizza");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"St. Louis Pizza");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Greek Pizza");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Hawaii");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Capricciosa");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Calzone");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Balado");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Rendang ");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Satay");
+	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Uruguay");
+	
 
 }
 
