@@ -1,12 +1,12 @@
-#pragma once
+﻿#pragma once
 
 #include "framework.h"
 
 LRESULT CALLBACK    WndProcPizza(HWND, UINT, WPARAM, LPARAM);
 
-void createPizza(HWND,HDC);
+void createPizza(HWND);
 void showWindowPizza(HINSTANCE hInstance, HWND mainWindow);
-
+void animation();
 HINSTANCE hInstP;
 BOOL isPizzaReg;
 
@@ -15,13 +15,18 @@ BOOL isPizzaReg;
 #define CMD_SIZE50 3000
 #define CMD_SIZE40 3001
 #define CMD_SIZE30 3002
+#define CMD_DELIVERY 3003
+#define CMD_ORDER 3004
 
 ///////////////////
 HWND hwndSIZE50;
 HWND hwndSIZE40;
 HWND hwndSIZE30;
+HWND hwndDELIVERY;
+HWND hwndORDER;
+HWND hwndPIZZA;
 
-
+HWND windowaa;
 void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
 
 	//Register class;
@@ -29,7 +34,7 @@ void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
 	//CreateWindow
 
 	hInstP = hInstance;
-
+	windowaa = mainWindow;
 	srand(time(0));
 	if (!isPizzaReg) {
 
@@ -62,7 +67,7 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	switch (message)
 	{
 	case WM_CREATE:
-		createPizza(hWnd,(HDC)wParam);
+		createPizza(hWnd);
 		break;
 
 	case WM_COMMAND:
@@ -87,13 +92,35 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 
 			break;
 		case CMD_SIZE30:
-			
+
 			SendMessageW(hwndSIZE50, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessageW(hwndSIZE40, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessageW(hwndSIZE30, BM_SETCHECK, BST_CHECKED, 0);
 
 			break;
+		case CMD_DELIVERY: {
 
+
+			LRESULT state = SendMessageW(hwndDELIVERY, BM_GETCHECK, 0, 0);
+			if (state == BST_CHECKED) {
+
+				SendMessageW(hwndDELIVERY, BM_SETCHECK, BST_UNCHECKED, 0);
+				SendMessageW(hwndDELIVERY, WM_KILLFOCUS, 0, 0);
+
+			}
+			else {
+
+				SendMessageW(hwndDELIVERY, BM_SETCHECK, BST_CHECKED, 0);
+				SendMessageW(hwndDELIVERY, WM_KILLFOCUS, 0, 0);
+
+
+			}
+
+		}
+						 break;
+		case CMD_ORDER:
+			animation();
+			break;
 
 		}
 	}
@@ -107,30 +134,40 @@ LRESULT CALLBACK    WndProcPizza(HWND hWnd, UINT message, WPARAM wParam, LPARAM 
 	return 0;
 }
 
-void createPizza(HWND hWnd,HDC wParam) {
+void animation() {
+	for (int j = 0; j < 800; j++) {
+
+		
+			MoveWindow(hwndPIZZA, 270 + j, 30, 110, 85, 1);
+
+		
+			Sleep(0);
+	}
+
+}
+
+void createPizza(HWND hWnd) {
+
+
+	hwndPIZZA = CreateWindowW(L"Static", L" // \"\"--.._\n||    (_)  _ \" - ._\n||        _ (_)     '-.\n||     (_)     __..-'\n \\\\__.. --\"\"", WS_VISIBLE | WS_CHILD, 270, 30, 110, 85, hWnd, NULL, hInstP, NULL);
 
 
 
-	CreateWindowW(L"Static", L"// \"\"--.._", WS_VISIBLE | WS_CHILD, 520, 30, 110, 23, hWnd, NULL, hInstP, NULL);
-	CreateWindowW(L"Static", L"||    (_)  _ \" - ._", WS_VISIBLE | WS_CHILD, 520, 50, 110, 23, hWnd, NULL, hInstP, NULL);
-	CreateWindowW(L"Static", L"||      _ (_)       '-.", WS_VISIBLE | WS_CHILD, 520, 70, 110, 23, hWnd, NULL, hInstP, NULL);
-	CreateWindowW(L"Static", L"||     (_)     __..-'", WS_VISIBLE | WS_CHILD, 520, 90, 110, 23, hWnd, NULL, hInstP, NULL);
-	CreateWindowW(L"Static", L" \\\\__.. --\"\"", WS_VISIBLE | WS_CHILD, 520, 110, 110, 23, hWnd, NULL, hInstP, NULL);
-
-	
-	
-	CreateWindowW(L"Button", L"Pizza", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 10, 10, 400, 300, hWnd, NULL, hInst, 0);	
-	CreateWindowW(L"Static", L"Your name:", WS_VISIBLE | WS_CHILD , 20, 30, 125, 23, hWnd, NULL, hInstP, NULL);
+	CreateWindowW(L"Button", L"Pizza", WS_CHILD | WS_VISIBLE | BS_GROUPBOX, 10, 10, 400, 300, hWnd, NULL, hInst, 0);
+	CreateWindowW(L"Static", L"Your name:", WS_VISIBLE | WS_CHILD, 20, 30, 125, 23, hWnd, NULL, hInstP, NULL);
 	CreateWindowW(L"Edit", L"", WS_CHILD | WS_VISIBLE, 20, 60, 125, 23, hWnd, (HMENU)CMD_COMBOBOX, hInst, 0);
 
-	hwndSIZE50 = CreateWindowW(L"Button", L"50 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 90, 75, 23, hWnd, (HMENU)CMD_SIZE50, hInst, 0);
-	hwndSIZE40 = CreateWindowW(L"Button", L"40 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 120, 75, 23, hWnd, (HMENU)CMD_SIZE40, hInst, 0);
-	hwndSIZE30 = CreateWindowW(L"Button", L"30 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 150, 75, 23, hWnd, (HMENU)CMD_SIZE30, hInst, 0);
+	CreateWindowW(L"Static", L"Size:", WS_VISIBLE | WS_CHILD, 20, 90, 75, 23, hWnd, NULL, hInstP, NULL);
+	hwndSIZE50 = CreateWindowW(L"Button", L"50 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 120, 75, 23, hWnd, (HMENU)CMD_SIZE50, hInst, 0);
+	hwndSIZE40 = CreateWindowW(L"Button", L"40 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 150, 75, 23, hWnd, (HMENU)CMD_SIZE40, hInst, 0);
+	hwndSIZE30 = CreateWindowW(L"Button", L"30 cm", WS_CHILD | WS_VISIBLE | BS_RADIOBUTTON, 20, 180, 75, 23, hWnd, (HMENU)CMD_SIZE30, hInst, 0);
 
+	hwndDELIVERY = CreateWindowW(L"Button", L"Delivery", WS_CHILD | WS_VISIBLE | BS_CHECKBOX | BS_RIGHTBUTTON, 175, 30, 75, 23, hWnd, (HMENU)CMD_DELIVERY, hInst, 0);
 
+	hwndORDER = CreateWindowW(L"Button", L"Order", WS_CHILD | WS_VISIBLE, 320, 250, 75, 23, hWnd, (HMENU)CMD_ORDER, hInst, 0);
 
-	CreateWindowW(L"Static", L"Choose pizza", WS_VISIBLE | WS_CHILD , 270, 170, 125, 23, hWnd, NULL, hInstP, NULL);
-	
+	CreateWindowW(L"Static", L"Choose pizza", WS_VISIBLE | WS_CHILD, 270, 170, 125, 23, hWnd, NULL, hInstP, NULL);
+
 	hwndCOMBOBOX = CreateWindowW(L"Combobox", L"Combox", WS_CHILD | WS_VISIBLE | CBS_DROPDOWNLIST | CBS_AUTOHSCROLL | WS_HSCROLL | WS_VSCROLL, 270, 200, 125, 150, hWnd, (HMENU)CMD_COMBOBOX, hInstP, 0);
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Neapolitan Pizza");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Chicago Pizza");
@@ -146,7 +183,7 @@ void createPizza(HWND hWnd,HDC wParam) {
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Rendang ");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Satay");
 	SendMessageW(hwndCOMBOBOX, CB_ADDSTRING, 0, (LPARAM)L"Uruguay");
-	
+
 
 }
 
