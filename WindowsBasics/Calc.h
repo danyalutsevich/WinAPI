@@ -12,7 +12,7 @@ HINSTANCE hInstC;
 BOOL isCalcReg = FALSE;
 
 ////////////////////////
-const int const  CMD_BUTTONS[10] = { 4000,4001,4002,4003,4004,4005,4006,4007,4008,4009 };
+
 
 #define CMD_BUTTON_0 4000
 #define CMD_BUTTON_1 4001
@@ -33,19 +33,32 @@ const int const  CMD_BUTTONS[10] = { 4000,4001,4002,4003,4004,4005,4006,4007,400
 #define CMD_BUTTON_MULTIPLY 4012
 #define CMD_BUTTON_DEVIDE 4013
 #define CMD_BUTTON_CLEAN 4014
+#define CMD_BUTTON_EQUALS 4015
+#define CMD_BUTTON_DELETE 4016
+#define CMD_BUTTON_PLUSMINUS 4017
+#define CMD_BUTTON_DOT 4018
 
 
 
 
 ///////////////////
+
 HWND hwndSTATIC;
 HWND hwndEDIT;
+
+HWND hwndBUTTONS[10];
+
 HWND hwndPLUS;
 HWND hwndMINUS;
 HWND hwndMULTIPLY;
 HWND hwndDEVIDE;
 HWND hwndCLEAN;
-HWND hwndBUTTONS[10];
+HWND hwndEQUALS;
+HWND hwndDELETE;
+HWND hwndPLUSMINUS;
+HWND hwndDOT;
+
+
 
 
 
@@ -107,7 +120,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			str[wcslen(str) + 1] = L'\0';
 			std::wstring strbuff = str;
 
-			strbuff+=L"0";
+			strbuff += L"0";
 
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)strbuff.c_str());
 
@@ -143,7 +156,10 @@ void createCalc(HWND hWnd) {
 
 
 
-	hwndSTATIC = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD, 20, 30, 125, 23, hWnd, 0, hInstC, 0);
+	hwndSTATIC = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD | ES_RIGHT, 20, 30, 125, 23, hWnd, 0, hInstC, 0);
+	SendMessage(hwndSTATIC, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+
+
 	hwndEDIT = CreateWindowW(L"Edit", L"0", WS_VISIBLE | WS_CHILD | ES_RIGHT, 20, 60, 125, 23, hWnd, 0, hInstC, 0);
 	SendMessage(hwndEDIT, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
@@ -155,6 +171,18 @@ void createCalc(HWND hWnd) {
 
 	WCHAR  buff[2];
 
+	COORD bPos;
+	bPos.X = 100;
+	bPos.Y = 100;
+
+	COORD bSize;
+	bSize.X = 65;
+	bSize.Y = 65;
+
+	COORD bMargin;
+	bMargin.X = 2;
+	bMargin.Y = 2;
+
 	COORD pos;
 	pos.X = 0;
 	pos.Y = 0;
@@ -162,7 +190,7 @@ void createCalc(HWND hWnd) {
 	for (int i = 1; i < 10; i++) {
 
 		_itow_s(i, buff, 2, 10);
-		hwndBUTTONS[i] = CreateWindowW(L"Button", buff, WS_CHILD | WS_VISIBLE, pos.X * 67 + 100, pos.Y * 67 + 100, 65, 65, hWnd, (HMENU)(4000 + i), hInstC, 0);
+		hwndBUTTONS[i] = CreateWindowW(L"Button", buff, WS_CHILD | WS_VISIBLE, pos.X * (bSize.X + bMargin.X) + bPos.X, pos.Y * 67 + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)(4000 + i), hInstC, 0);
 		SendMessage(hwndBUTTONS[i], WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 		pos.X++;
 		if (pos.X == 3) {
@@ -172,27 +200,30 @@ void createCalc(HWND hWnd) {
 		}
 	}
 
-	hwndBUTTONS[0] = CreateWindowW(L"Button", L"0", WS_CHILD | WS_VISIBLE, (pos.X + 1) * 67 + 100, (pos.Y) * 67 + 100, 65, 65, hWnd, (HMENU)4000, hInstC, 0);
+	hwndBUTTONS[0] = CreateWindowW(L"Button", L"0", WS_CHILD | WS_VISIBLE, (pos.X + 1) * (bSize.X + bMargin.X) + bPos.X, (pos.Y) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)4000, hInstC, 0);
 	SendMessage(hwndBUTTONS[0], WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
 
 
-	hwndMULTIPLY = CreateWindowW(L"Button", L"*", WS_CHILD | WS_VISIBLE, (pos.X) * 67 + 100, (pos.Y) * 67 + 100, 65, 65, hWnd, (HMENU)CMD_BUTTON_MULTIPLY, hInstC, 0);
+	hwndMULTIPLY = CreateWindowW(L"Button", L"*", WS_CHILD | WS_VISIBLE, (pos.X) * (bSize.X + bMargin.X) + bPos.X, (pos.Y) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)CMD_BUTTON_MULTIPLY, hInstC, 0);
 	SendMessage(hwndMULTIPLY, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
-	hwndDEVIDE = CreateWindowW(L"Button", L"/", WS_CHILD | WS_VISIBLE, (pos.X) * 67 + 100, (pos.Y + 1) * 67 + 100, 65, 65, hWnd, (HMENU)CMD_BUTTON_DEVIDE, hInstC, 0);
+	hwndDEVIDE = CreateWindowW(L"Button", L"/", WS_CHILD | WS_VISIBLE, (pos.X) * (bSize.X + bMargin.X) + bPos.X, (pos.Y + 1) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)CMD_BUTTON_DEVIDE, hInstC, 0);
 	SendMessage(hwndDEVIDE, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
 
-	hwndPLUS = CreateWindowW(L"Button", L"+", WS_CHILD | WS_VISIBLE, (pos.X + 2) * 67 + 100, (pos.Y + 1) * 67 + 100, 65, 65, hWnd, (HMENU)CMD_BUTTON_PLUS, hInstC, 0);
+	hwndPLUS = CreateWindowW(L"Button", L"+", WS_CHILD | WS_VISIBLE, (pos.X + 3) * (bSize.X + bMargin.X) + bPos.X, (pos.Y -1) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)CMD_BUTTON_PLUS, hInstC, 0);
 	SendMessage(hwndPLUS, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
-	hwndMINUS = CreateWindowW(L"Button", L"-", WS_CHILD | WS_VISIBLE, (pos.X + 2) * 67 + 100, (pos.Y) * 67 + 100, 65, 65, hWnd, (HMENU)CMD_BUTTON_MINUS, hInstC, 0);
+	hwndMINUS = CreateWindowW(L"Button", L"-", WS_CHILD | WS_VISIBLE, (pos.X + 3) * (bSize.X + bMargin.X) + bPos.X, (pos.Y-2) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)CMD_BUTTON_MINUS, hInstC, 0);
 	SendMessage(hwndMINUS, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
+	hwndEQUALS = CreateWindowW(L"Button", L"=", WS_CHILD | WS_VISIBLE, (pos.X + 3) * (bSize.X + bMargin.X) + bPos.X, (pos.Y) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y , hWnd, (HMENU)CMD_BUTTON_EQUALS, hInstC, 0);
+	SendMessage(hwndEQUALS, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
-	hwndCLEAN = CreateWindowW(L"Button", L"C", WS_CHILD | WS_VISIBLE, (pos.X + 1) * 67 + 100, (pos.Y + 1) * 67 + 100, 65, 65, hWnd, (HMENU)CMD_BUTTON_CLEAN, hInstC, 0);
-	SendMessage(hwndCLEAN, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+
+	hwndPLUSMINUS = CreateWindowW(L"Button", L"+/-", WS_CHILD | WS_VISIBLE, (pos.X + 1) * (bSize.X + bMargin.X) + bPos.X, (pos.Y + 1) * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)CMD_BUTTON_PLUSMINUS, hInstC, 0);
+	SendMessage(hwndPLUSMINUS, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 
 
 
