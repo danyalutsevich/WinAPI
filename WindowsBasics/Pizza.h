@@ -34,7 +34,7 @@ void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
 	//CreateWindow
 
 	hInstP = hInstance;
-	windowaa = mainWindow;
+	
 	srand(time(0));
 	if (!isPizzaReg) {
 
@@ -45,7 +45,7 @@ void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
 		wcex.hInstance = hInstP;
 		wcex.hbrBackground = CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255))/*((HBRUSH)(COLOR_WINDOW + 1))*/;
 		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-		wcex.lpszClassName = L"ControlsWindow";
+		wcex.lpszClassName = L"PizzaWindow";
 
 		if (!RegisterClassExW(&wcex)) {
 			MessageBoxW(mainWindow, L"Register class error!", L"Error", MB_OK | MB_ICONERROR);
@@ -55,7 +55,7 @@ void showWindowPizza(HINSTANCE hInstance, HWND mainWindow) {
 	}
 
 	//3
-	HWND controlsWindow = CreateWindowW(L"ControlsWindow", L"Pizza", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, mainWindow, NULL, hInst, 0);
+	HWND controlsWindow = CreateWindowW(L"PizzaWindow", L"Pizza", WS_OVERLAPPEDWINDOW, CW_USEDEFAULT, 0, CW_USEDEFAULT, 0, mainWindow, NULL, hInst, 0);
 
 	ShowWindow(controlsWindow, SW_NORMAL);
 

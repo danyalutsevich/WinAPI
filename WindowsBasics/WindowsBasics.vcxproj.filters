@@ -33,6 +33,9 @@
     <ClInclude Include="Pizza.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Calc.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="WindowsBasics.cpp">

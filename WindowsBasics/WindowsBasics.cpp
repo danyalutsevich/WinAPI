@@ -6,6 +6,7 @@
 #include <string>
 #include "Controls.h"
 #include "Pizza.h"
+#include "Calc.h"
 
 #define MAX_LOADSTRING 100
 #define CMD_BUTTON_PRESS_ME 1001
@@ -15,6 +16,7 @@
 #define CMD_BUTTON_MINUSTEN 1005
 #define CMD_BUTTON_RESET 1006
 #define CMD_BUTTON_PIZZA 1007
+#define CMD_BUTTON_CALC 1008
 
 // Global Variables:
 //HINSTANCE hInst;                                // current instance
@@ -27,6 +29,7 @@ HWND reset;
 HWND pressME;
 HWND mainWindow;
 HWND Pizza;
+HWND Calculator;
 
 //BOOL isControlsReg;
 
@@ -55,6 +58,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	UNREFERENCED_PARAMETER(lpCmdLine);
 
 	isControlsReg = FALSE;
+	isPizzaReg = FALSE;
+	isCalcReg = FALSE;
 	// TODO: Place code here.
 
 	// Initialize global strings
@@ -232,6 +237,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case CMD_BUTTON_RESET:
 			processEXReset();
 			break;
+		case CMD_BUTTON_CALC:
+			showWindowCalc(hInst, mainWindow);
+
+			break;
 
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
@@ -279,7 +288,9 @@ void createEX() {
 	decTen = CreateWindowW(L"Button", L"-10", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2 - 200, (480 / 2) - 23 / 2, 75, 23, mainWindow, (HMENU)CMD_BUTTON_MINUSTEN, hInst, NULL);
 	reset = CreateWindowW(L"Button", L"Reset", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 300, 75, 23, mainWindow, (HMENU)CMD_BUTTON_RESET, hInst, NULL);
 	pressME = CreateWindowW(L"Button", L"Press me", WS_VISIBLE | WS_CHILD, (640 / 2) - 75 / 2, 265, 75, 23, mainWindow, (HMENU)CMD_BUTTON_PRESS_ME, hInst, NULL);
-	Pizza = CreateWindowW(L"Button", L"Pizza", WS_VISIBLE | WS_CHILD, 320-75/2,100 , 75, 23, mainWindow, (HMENU)CMD_BUTTON_PIZZA, hInst, NULL);
+	Pizza = CreateWindowW(L"Button", L"Pizza", WS_VISIBLE | WS_CHILD, 320-75/2,200 , 75, 23, mainWindow, (HMENU)CMD_BUTTON_PIZZA, hInst, NULL);
+	Calculator = CreateWindowW(L"Button", L"Calc", WS_VISIBLE | WS_CHILD, 320-75/2,100 , 75, 23, mainWindow, (HMENU)CMD_BUTTON_CALC, hInst, NULL);
+
 }
 
 void processEX(int num) {

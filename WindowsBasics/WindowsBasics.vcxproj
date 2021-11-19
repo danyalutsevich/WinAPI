@@ -139,6 +139,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClInclude Include="Calc.h" />
     <ClInclude Include="Controls.h" />
     <ClInclude Include="framework.h" />
     <ClInclude Include="Pizza.h" />

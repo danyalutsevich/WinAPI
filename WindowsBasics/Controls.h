@@ -42,7 +42,7 @@ void showWindowControls(HINSTANCE hInstance, HWND mainWindow) {
 
 	srand(time(0));
 	if (!isControlsReg) {
-
+	
 		WNDCLASSEXW wcex;
 		ZeroMemory(&wcex, sizeof(WNDCLASSEXW));
 		wcex.cbSize = sizeof(WNDCLASSEX);
