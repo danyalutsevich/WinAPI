@@ -296,7 +296,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 				
 			}
 
-			if (!(std::regex_search(str, std::regex("\\d\\+")))) {
+			if ((!(std::regex_search(str, std::regex("\\d\\+\\d"))))&& (!(std::regex_search(str, std::regex("\\d\\-\\d")))) && (!(std::regex_search(str, std::regex("\\d\\*\\d")))) && (!(std::regex_search(str, std::regex("\\d\\/\\d"))))) {
 
 				n = _wtoi(buff);
 
@@ -351,6 +351,47 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
 
+
+			break;
+
+
+		case CMD_BUTTON_DEVIDE:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"-"[0]) {
+
+				buff[wcslen(buff) - 1] = L"/"[0];
+
+
+			}
+			else if (buff[wcslen(buff) - 1] != L"/"[0]) {
+
+				wcscat_s(buff, L"/");
+
+
+
+			}
+
+			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
+
+			break;
+
+		case CMD_BUTTON_MULTIPLY:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+
+				buff[wcslen(buff) - 1] = L"*"[0];
+			}
+			else if (buff[wcslen(buff) - 1] != L"*"[0]) {
+
+				wcscat_s(buff, L"*");
+
+
+
+			}
+
+			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
 			break;
 
