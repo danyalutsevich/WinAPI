@@ -1,7 +1,6 @@
 #pragma once
 
 #include "framework.h"
-#include <regex>
 
 LRESULT CALLBACK    WndProcCalc(HWND, UINT, WPARAM, LPARAM);
 
@@ -318,7 +317,11 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
 
-			if (buff[wcslen(buff) - 1] != L"+"[0]) {
+			if (buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+
+				buff[wcslen(buff) - 1] = L"+"[0];
+			}
+			else if (buff[wcslen(buff) - 1] != L"+"[0]) {
 
 				wcscat_s(buff, L"+");
 
@@ -327,14 +330,29 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			}
 
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
-			//	_itow_s(wcslen(buff), buff, 10);
-				//SendMessageW(hwndSTATIC, WM_SETTEXT, 0, (LPARAM)buff);
 
+			break;
+
+		case CMD_BUTTON_MINUS:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+
+				buff[wcslen(buff) - 1] = L"-"[0];
+			}
+			else if (buff[wcslen(buff) - 1] != L"-"[0]) {
+
+				wcscat_s(buff, L"-");
+
+
+
+			}
+
+			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
 
 
 			break;
-
 
 
 		}
