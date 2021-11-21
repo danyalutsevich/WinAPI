@@ -154,7 +154,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
 
-			if (_wtoi(buff) > 0) {
+			if (_wtoi(buff) != 0) {
 
 				wcscat_s(buff, L"0");
 				SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
@@ -287,6 +287,10 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
 
+			if (str) {
+				delete str;
+			}
+
 			str = new char[wcslen(buff) + 1];
 			str[wcslen(buff) + 1] = '\0';
 
@@ -413,6 +417,12 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			break;
 
 		}
+		//case CMD_BUTTON_DOT:
+
+
+
+
+		//	break;
 
 	}
 	case WM_DESTROY:
@@ -430,7 +440,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 void createCalc(HWND hWnd) {
 
 
-	const WCHAR fontName[] = L"Courier";
+	const WCHAR fontName[] = L"Cascadia Mono";
 	const long nFontSize = 20;
 
 	HFONT s_hFont;
@@ -477,7 +487,7 @@ void createCalc(HWND hWnd) {
 	for (int i = 1; i < 10; i++) {
 
 		_itow_s(i, buff, 2, 10);
-		hwndBUTTONS[i] = CreateWindowW(L"Button", buff, WS_CHILD | WS_VISIBLE, pos.X * (bSize.X + bMargin.X) + bPos.X, pos.Y * 67 + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)(4000 + i), hInstC, 0);
+		hwndBUTTONS[i] = CreateWindowW(L"Button", buff, WS_CHILD | WS_VISIBLE, pos.X * (bSize.X + bMargin.X) + bPos.X, pos.Y * (bSize.Y + bMargin.Y) + bPos.Y, bSize.X, bSize.Y, hWnd, (HMENU)(4000 + (i)), hInstC, 0);
 		SendMessage(hwndBUTTONS[i], WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
 		pos.X++;
 		if (pos.X == 3) {
