@@ -100,6 +100,7 @@ void showWindowCalc(HINSTANCE hInstance, HWND mainWindow) {
 int n;
 wchar_t buff[100] = L"\0";
 char* str;
+bool dotFlag=false;
 
 std::wstring* splitString(std::wstring str, wchar_t sym) {
 
@@ -279,6 +280,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			wcscpy_s(buff, L"");
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)L"0");
+			dotFlag = false;
 
 
 			break;
@@ -287,9 +289,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
 
-			if (str) {
-				delete str;
-			}
+			
 
 			str = new char[wcslen(buff) + 1];
 			str[wcslen(buff) + 1] = '\0';
@@ -313,7 +313,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 					SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 				}
 			}
-
+			delete str;
 			break;
 
 
@@ -321,7 +321,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
 
-			if (buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+			if (buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0] || buff[wcslen(buff) - 1] == L"."[0]) {
 
 				buff[wcslen(buff) - 1] = L"+"[0];
 			}
@@ -332,6 +332,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 
 			}
+			dotFlag = false;
 
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
@@ -340,7 +341,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		case CMD_BUTTON_MINUS:
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
-			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"/"[0] || buff[wcslen(buff) - 1] == L"."[0]) {
 
 				buff[wcslen(buff) - 1] = L"-"[0];
 			}
@@ -351,6 +352,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 
 			}
+			dotFlag = false;
 
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
@@ -362,7 +364,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		case CMD_BUTTON_DEVIDE:
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
-			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"-"[0]) {
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"."[0]) {
 
 				buff[wcslen(buff) - 1] = L"/"[0];
 
@@ -375,6 +377,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 
 			}
+			dotFlag = false;
 
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
@@ -383,7 +386,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 		case CMD_BUTTON_MULTIPLY:
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
-			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"/"[0]) {
+			if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"/"[0] || buff[wcslen(buff) - 1] == L"."[0]) {
 
 				buff[wcslen(buff) - 1] = L"*"[0];
 			}
@@ -395,6 +398,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			}
 
+			dotFlag = false;
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 
 			break;
@@ -416,13 +420,41 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 			break;
 
+		case CMD_BUTTON_DOT:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+
+			if (!dotFlag) {
+				dotFlag = true;
+
+				if (buff[wcslen(buff) - 1] == L"+"[0] || buff[wcslen(buff) - 1] == L"-"[0] || buff[wcslen(buff) - 1] == L"/"[0] || buff[wcslen(buff) - 1] == L"*"[0] || buff[wcslen(buff) - 1] == L"0"[0]) {
+
+				
+					wcscat_s(buff, L"0.");
+				}
+				else if (wcslen(buff)==0) {
+
+					wcscat_s(buff, L"0.");
+				}
+				else {
+
+					wcscat_s(buff, L".");
+				}
+				/*if (buff == L"") {
+					wcscat_s(buff, L"0.");
+
+				}
+				else {
+
+					wcscat_s(buff, L".");
+				}*/
+
+
+
+			}
+			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
+			break;
 		}
-		//case CMD_BUTTON_DOT:
-
-
-
-
-		//	break;
 
 	}
 	case WM_DESTROY:
