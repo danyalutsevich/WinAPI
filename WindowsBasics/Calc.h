@@ -396,6 +396,22 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			break;
 
 
+		case CMD_BUTTON_DELETE:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+			if (wcslen(buff) == 1) {
+				buff[wcslen(buff) - 1] = 0;
+				SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)L"0");
+			}
+			else if (wcslen(buff)) {
+
+				buff[wcslen(buff) - 1] = 0;
+				SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
+			}
+
+
+			break;
+
 		}
 
 	}
