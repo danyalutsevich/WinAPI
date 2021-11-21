@@ -1,12 +1,15 @@
 #pragma once
 
 #include "framework.h"
+#include <regex>
 
 LRESULT CALLBACK    WndProcCalc(HWND, UINT, WPARAM, LPARAM);
 
 void createCalc(HWND);
 void showWindowCalc(HINSTANCE hInstance, HWND mainWindow);
 void animation();
+std::wstring* splitString(std::wstring, wchar_t);
+
 
 HINSTANCE hInstC;
 BOOL isCalcReg = FALSE;
@@ -97,6 +100,40 @@ void showWindowCalc(HINSTANCE hInstance, HWND mainWindow) {
 }
 int n;
 wchar_t buff[100] = L"\0";
+char* str;
+
+std::wstring* splitString(std::wstring str, wchar_t sym) {
+
+	size_t pos = 0;
+	int parts = 1;
+
+	while ((pos = str.find(sym, pos + 1)) != std::string::npos) {
+		parts++;
+	}
+
+	std::wstring* res = new std::wstring[parts];
+	pos = 0;
+	size_t pos2;
+
+	for (int i = 0; i < parts - 1; i++) {
+
+		pos2 = str.find(sym, pos + 1);
+		res[i] = str.substr(pos, pos2 - pos);
+		pos = pos2;
+
+
+	}
+
+	res[parts - 1] = str.substr(pos + 1);
+
+
+
+	return res;
+}
+
+
+
+
 LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
 
 	switch (message)
@@ -240,20 +277,61 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 
 		case CMD_BUTTON_CLEAN:
-			
-			wcscpy_s(buff,L"");
+
+			wcscpy_s(buff, L"");
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)L"0");
-			
-			
+
+
 			break;
 
 		case CMD_BUTTON_PLUSMINUS:
 
 			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
-			n=_wtoi(buff);
-			n *= -1;
-			_itow_s(n, buff, 10);
+
+			str = new char[wcslen(buff) + 1];
+			str[wcslen(buff) + 1] = '\0';
+
+			for (int i = 0; i < wcslen(buff); i++) {
+
+				str[i] = (char)buff[i];
+				
+			}
+
+			if (!(std::regex_search(str, std::regex("\\d\\+")))) {
+
+				n = _wtoi(buff);
+
+				if (n != 0) {
+
+					n *= -1;
+
+					_itow_s(n, buff, 10);
+
+					SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
+				}
+			}
+
+			break;
+
+
+		case CMD_BUTTON_PLUS:
+
+			SendMessageW(hwndEDIT, WM_GETTEXT, 0, (LPARAM)buff);
+
+			if (buff[wcslen(buff) - 1] != L"+"[0]) {
+
+				wcscat_s(buff, L"+");
+
+
+
+			}
+
 			SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
+			//	_itow_s(wcslen(buff), buff, 10);
+				//SendMessageW(hwndSTATIC, WM_SETTEXT, 0, (LPARAM)buff);
+
+
+
 
 			break;
 

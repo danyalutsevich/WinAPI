@@ -15,3 +15,4 @@
 #include <tchar.h>
 #include <time.h>
 #include <string>
+#include <regex>
