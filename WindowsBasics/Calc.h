@@ -440,15 +440,7 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 
 					wcscat_s(buff, L".");
 				}
-				/*if (buff == L"") {
-					wcscat_s(buff, L"0.");
-
-				}
-				else {
-
-					wcscat_s(buff, L".");
-				}*/
-
+				
 
 
 			}
@@ -491,10 +483,6 @@ void createCalc(HWND hWnd) {
 
 	hwndEDIT = CreateWindowW(L"Edit", L"0", WS_VISIBLE | WS_CHILD | ES_RIGHT, 20, 60, 360, 23, hWnd, 0, hInstC, 0);
 	SendMessage(hwndEDIT, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
-
-	//CreateWindowW(L"Static", L"Your name:", WS_VISIBLE | WS_CHILD, 20, 30, 125, 23, hWnd, NULL, hInstP, NULL);
-	//CreateWindowW(L"Edit", L"", WS_CHILD | WS_VISIBLE, 20, 60, 125, 23, hWnd, (HMENU)CMD_COMBOBOX, hInst, 0);
-
 
 
 
