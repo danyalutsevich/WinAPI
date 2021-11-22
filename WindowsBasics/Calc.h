@@ -413,6 +413,10 @@ LRESULT CALLBACK    WndProcCalc(HWND hWnd, UINT message, WPARAM wParam, LPARAM l
 			}
 			else if (wcslen(buff)) {
 
+				if (buff[wcslen(buff) - 1]==L"."[0]) {
+
+					dotFlag = false;
+				}
 				buff[wcslen(buff) - 1] = 0;
 				SendMessageW(hwndEDIT, WM_SETTEXT, 0, (LPARAM)buff);
 			}
