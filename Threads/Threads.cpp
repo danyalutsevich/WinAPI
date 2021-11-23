@@ -151,7 +151,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hwndBUTTON1 = CreateWindowW(L"Button", L"Push me", WS_CHILD | WS_VISIBLE, 10, 10, 75, 23, hWnd, (HMENU)CMD_BUTTON_1, hInst, 0);
 		hwndBUTTON2 = CreateWindowW(L"Button", L"Thread", WS_CHILD | WS_VISIBLE, 10, 50, 75, 23, hWnd, (HMENU)CMD_BUTTON_2, hInst, 0);
 		hwndBUTTON3 = CreateWindowW(L"Button", L"percent", WS_CHILD | WS_VISIBLE, 10, 110, 75, 23, hWnd, (HMENU)CMD_BUTTON_3, hInst, 0);
-		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 300, 223, hWnd, (HMENU)NULL, hInst, 0);
+		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 350, 223, hWnd, (HMENU)NULL, hInst, 0);
 
 
 		break;
@@ -235,8 +235,8 @@ DWORD WINAPI ThreadProc(LPVOID params) {
 
 
 
-		MessageBoxW(NULL, L"hell", L"Works", MB_YESNOCANCEL);
-	
+	MessageBoxW(NULL, L"hell", L"Works", MB_YESNOCANCEL);
+
 
 	// DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), NULL, About);
 
@@ -247,8 +247,8 @@ DWORD WINAPI ThreadProc2(LPVOID params) {
 
 	MessageBoxW(NULL, (LPCWSTR)params, L"Works", MB_YESNOCANCEL);
 
-		//MessageBoxW(NULL, (LPCWSTR)params,L"Works",MB_YESNOCANCEL);
-	
+	//MessageBoxW(NULL, (LPCWSTR)params,L"Works",MB_YESNOCANCEL);
+
 
 
 	return 0;
@@ -286,54 +286,74 @@ void StartThread2() {
 
 
 float deposit = 100;
-//float percent = 2;
 
 struct DepData {
 
 	int month;
 	float percent;
+	static int count;
 	DepData(int month, float percent) :month{ month }, percent{ percent } {
 
 	}
 };
 
-	HANDLE hts[12]; // threads handles;
+int DepData::count = 0;
+
+
 DWORD WINAPI ThreadProc3(LPVOID params) {
-	/*((DepData*)params)->month;
-	((DepData*)params)->percent;*/
+
 	wchar_t buff[100];
 
 	DepData* data = (DepData*)params;
 
-
 	deposit += deposit * (data->percent / 100.0f);
-	//_itow_s(deposit, buff, 10);
+
 
 	_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f", data->month, data->percent, deposit);
-	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+	//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
 
 
-	CloseHandle(hts[data->month]);
 
+	DepData::count++;
 	delete data;
 
-	
+
 	return 0;
 }
 
-//DepData* depdata = new DepData(10.f, 1.f);
 
 void StartThread3() {
 
 
-	wchar_t num[100];
+	HANDLE hts[12];
 
-	for (int i = 0; i < 12; i++) {
 
-		_itow_s((int)CreateThread(NULL, 0, ThreadProc3, (LPVOID)new DepData(i+1, 10.f), 0, NULL),num,10);
-		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)num);
+	int month = 12;
+
+	for (int i = 0; i < month; i++) {
+
+		hts[i] = CreateThread(NULL, 0, ThreadProc3, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
 
 	}
 
+	do {
+
+		if (DepData::count == month) {
+
+			for (int i = 0; i < month; i++) {
+
+				CloseHandle(hts[i]);
+			}
+
+			wchar_t buff[100];
+			_snwprintf_s(buff, 100, L"amount %.2f", deposit);
+			SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+			DepData::count++;
+		}
+
+	} while (DepData::count != month + 1);
+
+	deposit = 100;
+	DepData::count = 0;
 
 }
