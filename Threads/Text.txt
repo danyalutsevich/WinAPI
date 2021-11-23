@@ -16,4 +16,7 @@
 Схема запуска -> WM_COMMAND ->StartThread()->
 CreateThread() -> End;
 	  |
-  ThreadProc -> MessageBox ->END
+  ThreadProc -> MessageBoxW ->End;
+
+
+
