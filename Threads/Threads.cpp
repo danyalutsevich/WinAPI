@@ -3,11 +3,13 @@
 
 #include "framework.h"
 #include "Threads.h"
+#include <time.h>
 
 #define MAX_LOADSTRING 100
 #define CMD_BUTTON_1 1001
 #define CMD_BUTTON_2 1002
 #define CMD_BUTTON_3 1003
+#define CMD_BUTTON_4 1004
 
 
 // Global Variables:
@@ -22,6 +24,7 @@ HWND listbox;
 HWND hwndBUTTON1;
 HWND hwndBUTTON2;
 HWND hwndBUTTON3;
+HWND hwndBUTTON4;
 
 
 
@@ -35,6 +38,7 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 void StartThread();
 void StartThread2();
 void StartThread3();
+void StartThread4();
 
 
 
@@ -86,7 +90,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 	WNDCLASSEXW wcex;
-
+	srand(time(0));
 	wcex.cbSize = sizeof(WNDCLASSEX);
 
 	wcex.style = CS_HREDRAW | CS_VREDRAW;
@@ -96,7 +100,7 @@ ATOM MyRegisterClass(HINSTANCE hInstance)
 	wcex.hInstance = hInstance;
 	wcex.hIcon = LoadIcon(hInstance, MAKEINTRESOURCE(IDI_THREADS));
 	wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
-	wcex.hbrBackground = (HBRUSH)(COLOR_WINDOW + 3);
+	wcex.hbrBackground = CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255))/*(HBRUSH)(COLOR_WINDOW + 3)*/;
 	wcex.lpszMenuName = MAKEINTRESOURCEW(IDC_THREADS);
 	wcex.lpszClassName = szWindowClass;
 	wcex.hIconSm = LoadIcon(wcex.hInstance, MAKEINTRESOURCE(IDI_SMALL));
@@ -151,6 +155,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hwndBUTTON1 = CreateWindowW(L"Button", L"Push me", WS_CHILD | WS_VISIBLE, 10, 10, 75, 23, hWnd, (HMENU)CMD_BUTTON_1, hInst, 0);
 		hwndBUTTON2 = CreateWindowW(L"Button", L"Thread", WS_CHILD | WS_VISIBLE, 10, 50, 75, 23, hWnd, (HMENU)CMD_BUTTON_2, hInst, 0);
 		hwndBUTTON3 = CreateWindowW(L"Button", L"percent", WS_CHILD | WS_VISIBLE, 10, 110, 75, 23, hWnd, (HMENU)CMD_BUTTON_3, hInst, 0);
+		hwndBUTTON4 = CreateWindowW(L"Button", L"mutex", WS_CHILD | WS_VISIBLE, 10, 170, 75, 23, hWnd, (HMENU)CMD_BUTTON_4, hInst, 0);
 		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 350, 223, hWnd, (HMENU)NULL, hInst, 0);
 
 
@@ -177,6 +182,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case CMD_BUTTON_3:
 
 			StartThread3();
+
+			break;
+		case CMD_BUTTON_4:
+
+			StartThread4();
 
 			break;
 		case IDM_ABOUT:
@@ -285,7 +295,6 @@ void StartThread2() {
 }
 
 
-float deposit = 100;
 
 struct DepData {
 
@@ -299,6 +308,31 @@ struct DepData {
 
 int DepData::count = 0;
 
+int activeThreads;
+float deposit;
+HANDLE hts[12] = {};
+
+
+DWORD WINAPI finalizer(LPVOID params) {
+
+
+	for (int i = 0; i < 12; i++) {
+
+		if (hts[i]) {
+
+			CloseHandle(hts[i]);
+			hts[i] = NULL;
+		}
+
+	}
+
+	wchar_t buff[100];
+	_snwprintf_s(buff, 100, L"total %.2f", deposit);
+	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+
+
+	return 0;
+}
 
 DWORD WINAPI ThreadProc3(LPVOID params) {
 
@@ -313,11 +347,14 @@ DWORD WINAPI ThreadProc3(LPVOID params) {
 	//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
 
 
-
-	DepData::count++;
 	delete data;
 
+	activeThreads--;
+	if (activeThreads == 0) {
+		//launch finalizer
 
+		CreateThread(NULL, 0, finalizer, (LPVOID)NULL, 0, NULL);
+	}
 	return 0;
 }
 
@@ -325,35 +362,125 @@ DWORD WINAPI ThreadProc3(LPVOID params) {
 void StartThread3() {
 
 
-	HANDLE hts[12];
 
 
 	int month = 12;
+	activeThreads = 0;
+	deposit = 100;
 
 	for (int i = 0; i < month; i++) {
 
 		hts[i] = CreateThread(NULL, 0, ThreadProc3, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
 
+		if (hts[i] != NULL) {
+			activeThreads++;
+		}
 	}
 
-	do {
 
-		if (DepData::count == month) {
 
-			for (int i = 0; i < month; i++) {
+}
 
-				CloseHandle(hts[i]);
-			}
 
-			wchar_t buff[100];
-			_snwprintf_s(buff, 100, L"amount %.2f", deposit);
-			SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
-			DepData::count++;
+HANDLE hts4[12];
+int activeThreads4;
+
+HANDLE mutex4 = NULL;
+
+
+DWORD WINAPI finalizer4(LPVOID params) {
+
+
+	for (int i = 0; i < 12; i++) {
+
+		if (hts4[i]) {
+
+			CloseHandle(hts4[i]);
+			hts4[i] = NULL;
 		}
 
-	} while (DepData::count != month + 1);
+	}
 
+	CloseHandle(mutex4);
+	mutex4 = NULL;
+	wchar_t buff[100];
+	_snwprintf_s(buff, 100, L"total %.2f", deposit);
+	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+
+	return 0;
+}
+
+DWORD WINAPI ThreadProc4(LPVOID params) {
+
+	//SendMessage(listbox, LB_RESETCONTENT, 0, (LPARAM)0);
+	wchar_t buff[100];
+
+	DepData* data = (DepData*)params;
+	DWORD waitResult = WaitForSingleObject(mutex4, INFINITE);
+
+	if (waitResult == WAIT_OBJECT_0) {
+
+		deposit += deposit * (data->percent / 100.0f);
+
+
+		_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f", data->month, data->percent, deposit);
+		//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+
+
+
+		activeThreads4--;
+		if (activeThreads4 == 0) {
+			//launch finalizer
+
+			CreateThread(NULL, 0, finalizer4, (LPVOID)NULL, 0, NULL);
+		}
+		ReleaseMutex(mutex4);
+	}
+	else {
+
+		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex wait error");
+
+
+	}
+
+	delete data;
+	return 0;
+}
+
+void StartThread4() {
+
+	int month = 12;
+	activeThreads4 = 0;
 	deposit = 100;
-	DepData::count = 0;
+	if (mutex4 != NULL) {
+
+		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex error");
+		return;
+	}
+
+
+
+	mutex4 = CreateMutex(NULL, FALSE, NULL);
+
+	if (mutex4 == NULL) {
+
+		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex error");
+		return;
+	}
+	else {
+
+		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex ok");
+
+	}
+
+	for (int i = 0; i < month; i++) {
+
+		hts4[i] = CreateThread(NULL, 0, ThreadProc4, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
+
+		if (hts4[i] != NULL) {
+			activeThreads4++;
+		}
+	}
+
 
 }
