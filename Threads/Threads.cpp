@@ -26,6 +26,8 @@ HWND hwndBUTTON2;
 HWND hwndBUTTON3;
 HWND hwndBUTTON4;
 
+HANDLE mutex4 = NULL;
+
 
 
 
@@ -157,7 +159,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		hwndBUTTON3 = CreateWindowW(L"Button", L"percent", WS_CHILD | WS_VISIBLE, 10, 110, 75, 23, hWnd, (HMENU)CMD_BUTTON_3, hInst, 0);
 		hwndBUTTON4 = CreateWindowW(L"Button", L"mutex", WS_CHILD | WS_VISIBLE, 10, 170, 75, 23, hWnd, (HMENU)CMD_BUTTON_4, hInst, 0);
 		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 350, 223, hWnd, (HMENU)NULL, hInst, 0);
-
+		mutex4 = CreateMutex(NULL, FALSE, NULL);
 
 		break;
 
@@ -185,8 +187,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			break;
 		case CMD_BUTTON_4:
+			
 
 			StartThread4();
+			
 
 			break;
 		case IDM_ABOUT:
@@ -209,6 +213,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_DESTROY:
+		CloseHandle(mutex4);
+
 		PostQuitMessage(0);
 		break;
 	default:
@@ -385,7 +391,6 @@ void StartThread3() {
 HANDLE hts4[12];
 int activeThreads4;
 
-HANDLE mutex4 = NULL;
 
 
 DWORD WINAPI finalizer4(LPVOID params) {
@@ -401,8 +406,6 @@ DWORD WINAPI finalizer4(LPVOID params) {
 
 	}
 
-	CloseHandle(mutex4);
-	mutex4 = NULL;
 	wchar_t buff[100];
 	_snwprintf_s(buff, 100, L"total %.2f", deposit);
 	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
@@ -422,14 +425,13 @@ DWORD WINAPI ThreadProc4(LPVOID params) {
 
 		deposit += deposit * (data->percent / 100.0f);
 
-
 		_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f", data->month, data->percent, deposit);
 		//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
 
 
 
-		activeThreads4--;
-		if (activeThreads4 == 0) {
+		activeThreads4++;
+		if (activeThreads4 == 12) {
 			//launch finalizer
 
 			CreateThread(NULL, 0, finalizer4, (LPVOID)NULL, 0, NULL);
@@ -452,34 +454,12 @@ void StartThread4() {
 	int month = 12;
 	activeThreads4 = 0;
 	deposit = 100;
-	if (mutex4 != NULL) {
-
-		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex error");
-		return;
-	}
-
-
-
-	mutex4 = CreateMutex(NULL, FALSE, NULL);
-
-	if (mutex4 == NULL) {
-
-		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex error");
-		return;
-	}
-	else {
-
-		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex ok");
-
-	}
 
 	for (int i = 0; i < month; i++) {
 
 		hts4[i] = CreateThread(NULL, 0, ThreadProc4, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
 
-		if (hts4[i] != NULL) {
-			activeThreads4++;
-		}
+		
 	}
 
 
