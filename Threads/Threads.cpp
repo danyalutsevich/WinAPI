@@ -458,7 +458,6 @@ void StartThread4() {
 	for (int i = 0; i < month; i++) {
 
 		hts4[i] = CreateThread(NULL, 0, ThreadProc4, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
-
 		
 	}
 
