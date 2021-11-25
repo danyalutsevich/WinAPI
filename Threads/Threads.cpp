@@ -7,27 +7,20 @@
 
 #define MAX_LOADSTRING 100
 #define CMD_BUTTON_1 1001
-#define CMD_BUTTON_2 1002
-#define CMD_BUTTON_3 1003
-#define CMD_BUTTON_4 1004
 
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
-HWND listbox;
 
 
 
-
+HWND listbox1;
+HWND listbox2;
 HWND hwndBUTTON1;
-HWND hwndBUTTON2;
-HWND hwndBUTTON3;
-HWND hwndBUTTON4;
-
-HANDLE mutex4 = NULL;
-
+HANDLE mutex = NULL;
+HANDLE semaphore = NULL;
 
 
 
@@ -38,9 +31,6 @@ LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 void StartThread();
-void StartThread2();
-void StartThread3();
-void StartThread4();
 
 
 
@@ -155,11 +145,10 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE:
 
 		hwndBUTTON1 = CreateWindowW(L"Button", L"Push me", WS_CHILD | WS_VISIBLE, 10, 10, 75, 23, hWnd, (HMENU)CMD_BUTTON_1, hInst, 0);
-		hwndBUTTON2 = CreateWindowW(L"Button", L"Thread", WS_CHILD | WS_VISIBLE, 10, 50, 75, 23, hWnd, (HMENU)CMD_BUTTON_2, hInst, 0);
-		hwndBUTTON3 = CreateWindowW(L"Button", L"percent", WS_CHILD | WS_VISIBLE, 10, 110, 75, 23, hWnd, (HMENU)CMD_BUTTON_3, hInst, 0);
-		hwndBUTTON4 = CreateWindowW(L"Button", L"mutex", WS_CHILD | WS_VISIBLE, 10, 170, 75, 23, hWnd, (HMENU)CMD_BUTTON_4, hInst, 0);
-		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 350, 223, hWnd, (HMENU)NULL, hInst, 0);
-		mutex4 = CreateMutex(NULL, FALSE, NULL);
+		listbox1 = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 90, 90, 350, 500, hWnd, (HMENU)NULL, hInst, 0);
+		listbox2 = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 500, 90, 350, 500, hWnd, (HMENU)NULL, hInst, 0);
+		mutex = CreateMutex(NULL, FALSE, NULL);
+		semaphore = CreateSemaphore(NULL, 3, 3, NULL);
 
 		break;
 
@@ -175,24 +164,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 			break;
-		case CMD_BUTTON_2:
 
-			StartThread2();
-
-
-			break;
-		case CMD_BUTTON_3:
-
-			StartThread3();
-
-			break;
-		case CMD_BUTTON_4:
-			
-
-			StartThread4();
-			
-
-			break;
 		case IDM_ABOUT:
 			/*DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);*/
 			break;
@@ -213,7 +185,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	}
 	break;
 	case WM_DESTROY:
-		CloseHandle(mutex4);
+
+		CloseHandle(mutex);
+		CloseHandle(semaphore);
 
 		PostQuitMessage(0);
 		break;
@@ -247,58 +221,6 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-DWORD WINAPI ThreadProc(LPVOID params) {
-
-
-
-	MessageBoxW(NULL, L"hell", L"Works", MB_YESNOCANCEL);
-
-
-	// DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), NULL, About);
-
-	return 0;
-}
-
-DWORD WINAPI ThreadProc2(LPVOID params) {
-
-	MessageBoxW(NULL, (LPCWSTR)params, L"Works", MB_YESNOCANCEL);
-
-	//MessageBoxW(NULL, (LPCWSTR)params,L"Works",MB_YESNOCANCEL);
-
-
-
-	return 0;
-}
-
-
-
-void StartThread() {
-
-	CreateThread(
-		NULL, // attributes for thread
-		0,    //Stack limit 0 - system default
-		ThreadProc,// Address of thread function
-		NULL, // Pointer to parametr(s)
-		0,    // Creation flags
-		NULL  // Thread Id pointer
-	);
-
-}
-
-
-
-void StartThread2() {
-
-	CreateThread(
-		NULL,
-		0,
-		ThreadProc2,
-		szTitle,
-		0,
-		NULL
-	);
-
-}
 
 
 
@@ -314,9 +236,14 @@ struct DepData {
 
 int DepData::count = 0;
 
+
+
+HANDLE hts[12];
 int activeThreads;
 float deposit;
-HANDLE hts[12] = {};
+
+int currentThread = 0;
+
 
 
 DWORD WINAPI finalizer(LPVOID params) {
@@ -334,131 +261,77 @@ DWORD WINAPI finalizer(LPVOID params) {
 
 	wchar_t buff[100];
 	_snwprintf_s(buff, 100, L"total %.2f", deposit);
-	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
-
-
+	SendMessage(listbox1, LB_ADDSTRING, 100, (LPARAM)buff);
+	//currentThread = 0;
 	return 0;
 }
 
-DWORD WINAPI ThreadProc3(LPVOID params) {
-
-	wchar_t buff[100];
-
-	DepData* data = (DepData*)params;
-
-	deposit += deposit * (data->percent / 100.0f);
+DWORD WINAPI ThreadProc(LPVOID params) {
 
 
-	_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f", data->month, data->percent, deposit);
-	//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
+	DWORD waitResultS = WaitForSingleObject(semaphore, INFINITE);
+
+	if (waitResultS == WAIT_OBJECT_0) {
+
+		currentThread++;
+		wchar_t buff[100];
+
+		DepData* data = (DepData*)params;
+
+		DWORD waitResultM = WaitForSingleObject(mutex, INFINITE);
+		if (waitResultM == WAIT_OBJECT_0) {
+
+			deposit += deposit * (data->percent / 100.0f);
+			_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f, %d", data->month, data->percent, deposit, currentThread);
+			SendMessage(listbox2, LB_ADDSTRING, 100, (LPARAM)buff);
 
 
-	delete data;
+			activeThreads++;
+			if (activeThreads == 12) {
+				//launch finalizer
 
-	activeThreads--;
-	if (activeThreads == 0) {
-		//launch finalizer
+				CreateThread(NULL, 0, finalizer, (LPVOID)NULL, 0, NULL);
+			}
+			ReleaseMutex(mutex);
 
-		CreateThread(NULL, 0, finalizer, (LPVOID)NULL, 0, NULL);
+			delete data;
+		}
+		else {
+
+			SendMessage(listbox2, LB_ADDSTRING, 100, (LPARAM)L"Mutex wait error");
+		}
+
 	}
+	else {
+
+		SendMessage(listbox2, LB_ADDSTRING, 100, (LPARAM)L"Semaphore wait error");
+	}
+
+	if (ReleaseSemaphore(semaphore, 1, NULL)) {
+		currentThread--;
+
+		SendMessage(listbox2, LB_ADDSTRING, 100, (LPARAM)L"Semaphore Release ok");
+	}
+	else {
+
+		SendMessage(listbox2, LB_ADDSTRING, 100, (LPARAM)L"Semaphore Release error");
+	}
+
 	return 0;
 }
 
-
-void StartThread3() {
-
-
-
+void StartThread() {
 
 	int month = 12;
 	activeThreads = 0;
 	deposit = 100;
+	SendMessage(listbox2, LB_RESETCONTENT, 0, (LPARAM)0);
+
 
 	for (int i = 0; i < month; i++) {
 
-		hts[i] = CreateThread(NULL, 0, ThreadProc3, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
+		hts[i] = CreateThread(NULL, 0, ThreadProc, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
 
-		if (hts[i] != NULL) {
-			activeThreads++;
-		}
-	}
-
-
-
-}
-
-
-HANDLE hts4[12];
-int activeThreads4;
-
-
-
-DWORD WINAPI finalizer4(LPVOID params) {
-
-
-	for (int i = 0; i < 12; i++) {
-
-		if (hts4[i]) {
-
-			CloseHandle(hts4[i]);
-			hts4[i] = NULL;
-		}
-
-	}
-
-	wchar_t buff[100];
-	_snwprintf_s(buff, 100, L"total %.2f", deposit);
-	SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
-
-	return 0;
-}
-
-DWORD WINAPI ThreadProc4(LPVOID params) {
-
-	//SendMessage(listbox, LB_RESETCONTENT, 0, (LPARAM)0);
-	wchar_t buff[100];
-
-	DepData* data = (DepData*)params;
-	DWORD waitResult = WaitForSingleObject(mutex4, INFINITE);
-
-	if (waitResult == WAIT_OBJECT_0) {
-
-		deposit += deposit * (data->percent / 100.0f);
-
-		_snwprintf_s(buff, 100, L"month %d percent %.2f amount %.2f", data->month, data->percent, deposit);
-		//SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)buff);
-
-
-
-		activeThreads4++;
-		if (activeThreads4 == 12) {
-			//launch finalizer
-
-			CreateThread(NULL, 0, finalizer4, (LPVOID)NULL, 0, NULL);
-		}
-		ReleaseMutex(mutex4);
-	}
-	else {
-
-		SendMessage(listbox, LB_ADDSTRING, 100, (LPARAM)L"Mutex wait error");
-
-
-	}
-
-	delete data;
-	return 0;
-}
-
-void StartThread4() {
-
-	int month = 12;
-	activeThreads4 = 0;
-	deposit = 100;
-
-	for (int i = 0; i < month; i++) {
-
-		hts4[i] = CreateThread(NULL, 0, ThreadProc4, (LPVOID)new DepData(i + 1, 10.f), 0, NULL);
-		
 	}
 
 
