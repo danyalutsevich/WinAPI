@@ -183,7 +183,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			closeNotepad();
 			break;
 		case CMD_OPEN_CHROME:
-
 			chrome();
 			break;
 		case CMD_OPEN_CALC:
@@ -192,11 +191,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case CMD_CLOSE_CALC:
 			closeCalc();
 			break;
-
 		case CMD_OPEN_CMD:
 			cmd();
 			break;
-
 		case CMD_CLOSE_CMD:
 			closeCmd();
 			break;
@@ -289,10 +286,7 @@ void notepad() {
 	else {
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"notepad error");
-
 	}
-
-
 }
 
 void closeNotepad() {
@@ -303,29 +297,22 @@ void closeNotepad() {
 
 		CloseHandle(iNotepad.pInfo.hThread);
 		CloseHandle(iNotepad.pInfo.hProcess);
-
 	}
-
 }
 
 INFO iChrome;
 
 void chrome() {
 
-	
 	if (CreateProcessW(L"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", 
 		(LPWSTR)L"\\ https://itstep.org", NULL, NULL, TRUE, IDLE_PRIORITY_CLASS |CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iChrome.sInfo, &iChrome.pInfo)) {
 
-
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"chrome works");
 		CreateThread(NULL, 0, NewProcess, &iChrome, 0, NULL);
-
-
 	}
 	else {
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"chrome error");
-
 	}
 }
 
@@ -337,9 +324,7 @@ void closeChrome() {
 
 		CloseHandle(iChrome.pInfo.hThread);
 		CloseHandle(iChrome.pInfo.hProcess);
-
 	}
-
 }
 
 
@@ -348,20 +333,14 @@ INFO iCalc;
 
 void calc() {
 
-
 	if (CreateProcessW(L"C:\\Windows\\SysWOW64\\calc.exe",NULL, NULL, NULL, TRUE, IDLE_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iCalc.sInfo, &iCalc.pInfo)) {
-
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"calc works");
 		CreateThread(NULL, 0, NewProcess, &iCalc, 0, NULL);
-
-
-
 	}
 	else {
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"calc error");
-
 	}
 }
 
@@ -373,9 +352,7 @@ void closeCalc() {
 
 		CloseHandle(iCalc.pInfo.hThread);
 		CloseHandle(iCalc.pInfo.hProcess);
-
 	}
-
 }
 
 
@@ -383,20 +360,14 @@ INFO iCmd;
 
 void cmd() {
 
-
 	if (CreateProcessW(L"C:\\Windows\\SysWOW64\\cmd.exe", NULL, NULL, NULL, TRUE, IDLE_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iCmd.sInfo, &iCmd.pInfo)) {
-
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"cmd works");
 		CreateThread(NULL, 0, NewProcess, &iCmd, 0, NULL);
-
-
-
 	}
 	else {
 
 		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"cmd error");
-
 	}
 }
 
@@ -408,7 +379,5 @@ void closeCmd() {
 
 		CloseHandle(iCmd.pInfo.hThread);
 		CloseHandle(iCmd.pInfo.hProcess);
-
 	}
-
 }
