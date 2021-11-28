@@ -6,24 +6,46 @@
 
 #define MAX_LOADSTRING 100
 
-#define CMD_BUTTON_1 1000
-#define CMD_BUTTON_2 1001
+#define CMD_OPEN_NOTEPAD 1000
+#define CMD_CLOSE_NOTEPAD 1001
+#define CMD_OPEN_CHROME 1002
+#define CMD_CLOSE_CHROME 1003
+#define CMD_OPEN_CALC 1004
+#define CMD_CLOSE_CALC 1005
+#define CMD_OPEN_CMD 1006
+#define CMD_CLOSE_CMD 1007
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
-HWND Button1;
-HWND listbox;
+HWND hListbox;
+HWND hNotepadO;
+HWND hNotepadC;
+HWND hChromeO;
+HWND hChromeC;
+HWND hCalcO;
+HWND hCalcC;
+HWND hCmdO;
+HWND hCmdC;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
-void button1Click();
+
+void notepad();
+void closeNotepad();
 void chrome();
+void closeChrome();
+void calc();
+void closeCalc();
+void cmd();
+void closeCmd();
+
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -137,8 +159,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 	case WM_CREATE:
-		listbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 100, 10, 300, 400, hWnd, NULL, hInst, NULL);
-		Button1 = CreateWindowW(L"Button", L"Process", WS_CHILD | WS_VISIBLE, 10, 10, 75, 23, hWnd, (HMENU)CMD_BUTTON_1, hInst, NULL);
+		hListbox = CreateWindowW(L"Listbox", L"", WS_CHILD | WS_VISIBLE, 300, 10, 300, 400, hWnd, NULL, hInst, NULL);
+		hNotepadO = CreateWindowW(L"Button", L"notepad", WS_CHILD | WS_VISIBLE, 10, 10, 75, 23, hWnd, (HMENU)CMD_OPEN_NOTEPAD, hInst, NULL);
+		hNotepadC = CreateWindowW(L"Button", L"close", WS_CHILD | WS_VISIBLE, 100, 10, 75, 23, hWnd, (HMENU)CMD_CLOSE_NOTEPAD, hInst, NULL);
+		hChromeO = CreateWindowW(L"Button", L"chrome", WS_CHILD | WS_VISIBLE, 10, 40, 75, 23, hWnd, (HMENU)CMD_OPEN_CHROME, hInst, NULL);
+		hChromeC = CreateWindowW(L"Button", L"close", WS_CHILD | WS_VISIBLE, 100, 40, 75, 23, hWnd, (HMENU)CMD_CLOSE_CHROME, hInst, NULL);
+		hCalcO = CreateWindowW(L"Button", L"calc", WS_CHILD | WS_VISIBLE, 10, 70, 75, 23, hWnd, (HMENU)CMD_OPEN_CALC, hInst, NULL);
+		hCalcC = CreateWindowW(L"Button", L"close", WS_CHILD | WS_VISIBLE, 100, 70, 75, 23, hWnd, (HMENU)CMD_CLOSE_CALC, hInst, NULL);
+		hCmdO = CreateWindowW(L"Button", L"cmd", WS_CHILD | WS_VISIBLE, 10, 100, 75, 23, hWnd, (HMENU)CMD_OPEN_CMD, hInst, NULL);
+		hCmdC = CreateWindowW(L"Button", L"close", WS_CHILD | WS_VISIBLE, 100, 100, 75, 23, hWnd, (HMENU)CMD_CLOSE_CMD, hInst, NULL);
 
 		break;
 	case WM_COMMAND:
@@ -147,9 +176,29 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case CMD_BUTTON_1:
-			//button1Click();
+		case CMD_OPEN_NOTEPAD:
+			notepad();
+			break;
+		case CMD_CLOSE_NOTEPAD:
+			closeNotepad();
+			break;
+		case CMD_OPEN_CHROME:
+
 			chrome();
+			break;
+		case CMD_OPEN_CALC:
+			calc();
+			break;
+		case CMD_CLOSE_CALC:
+			closeCalc();
+			break;
+
+		case CMD_OPEN_CMD:
+			cmd();
+			break;
+
+		case CMD_CLOSE_CMD:
+			closeCmd();
 			break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -201,67 +250,165 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 
-PROCESS_INFORMATION pInfo;
-STARTUPINFO sInfo;
 
+struct INFO {
 
+	PROCESS_INFORMATION pInfo;
+	STARTUPINFO sInfo;
+
+	INFO() {
+
+		ZeroMemory(&pInfo, sizeof(PROCESS_INFORMATION));
+		ZeroMemory(&sInfo, sizeof(STARTUPINFO));
+
+	}
+
+};
 
 DWORD WINAPI NewProcess(LPVOID param) {
 
-	//SendMessageW(listbox,LB_ADDSTRING,100,(LPARAM)L"works");
 
+	INFO* app = (INFO*)param;
+	WaitForSingleObject(app->pInfo.hProcess, 60000);
+	TerminateProcess(app->pInfo.hProcess, 0);
+	SendMessageW(hListbox,LB_ADDSTRING,100,(LPARAM)L"you've not used this app for 1 minute, so it has been closed");
 
-	WaitForSingleObject(pInfo.hProcess, 100);
-	TerminateProcess(pInfo.hProcess, 2000);
-
-	CloseHandle(pInfo.hThread);
-	CloseHandle(pInfo.hProcess);
-	SendMessageW(listbox, LB_ADDSTRING, 100, (LPARAM)L"stopped");
+	CloseHandle(app->pInfo.hThread);
+	CloseHandle(app->pInfo.hProcess);
 	return 0;
 }
 
-void button1Click() {
+INFO iNotepad;
+void notepad() {
 
-	ZeroMemory(&pInfo, sizeof(PROCESS_INFORMATION));
-	ZeroMemory(&sInfo, sizeof(STARTUPINFO));
+	if (CreateProcessW(L"C:\\Windows\\notepad.exe", (LPWSTR)L"\\W C:\\Users\\luche\\Desktop\\dz.txt", NULL, NULL, TRUE, 0, NULL, NULL, &iNotepad.sInfo, &iNotepad.pInfo)) {
 
-
-	if (CreateProcessW(L"C:\\Windows\\notepad.exe", (LPWSTR)L"\\W C:\\Users\\luce_dp7x\\Desktop\\xtx.txt", NULL, NULL, TRUE, 0, NULL, NULL, &sInfo, &pInfo)) {
-
-		//CreateThread(NULL,0,NewProcess,NULL,0,NULL);
-
-		SendMessageW(listbox, LB_ADDSTRING, 100, (LPARAM)L"works");
-
-
-
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"notepad works");
+		CreateThread(NULL,0,NewProcess, &iNotepad,0,NULL);
 	}
 	else {
 
-		SendMessageW(listbox, LB_ADDSTRING, 100, (LPARAM)L"error");
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"notepad error");
 
 	}
 
 
 }
 
+void closeNotepad() {
+
+	if (TerminateProcess(iNotepad.pInfo.hProcess, 0)) {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"notepad stopped");
+
+		CloseHandle(iNotepad.pInfo.hThread);
+		CloseHandle(iNotepad.pInfo.hProcess);
+
+	}
+
+}
+
+INFO iChrome;
+
 void chrome() {
 
-	ZeroMemory(&pInfo, sizeof(PROCESS_INFORMATION));
-	ZeroMemory(&sInfo, sizeof(STARTUPINFO));
+	
+	if (CreateProcessW(L"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe", 
+		(LPWSTR)L"\\ https://itstep.org", NULL, NULL, TRUE, IDLE_PRIORITY_CLASS |CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iChrome.sInfo, &iChrome.pInfo)) {
 
 
-	if (CreateProcessW(L"C:\\Program Files (x86)\\Google\\Chrome\\Application\\chrome.exe", (LPWSTR)L"\\W https://github.com/danyalutsevich/WinAPI/blob/threads/Threads/Threads.cpp", NULL, NULL, TRUE, 0, NULL, NULL, &sInfo, &pInfo)) {
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"chrome works");
+		CreateThread(NULL, 0, NewProcess, &iChrome, 0, NULL);
 
-		//CreateThread(NULL,0,NewProcess,NULL,0,NULL);
 
-		SendMessageW(listbox, LB_ADDSTRING, 100, (LPARAM)L"works");
+	}
+	else {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"chrome error");
+
+	}
+}
+
+void closeChrome() {
+
+	if (TerminateProcess(iChrome.pInfo.hProcess, 0)) {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"chrome stopped");
+
+		CloseHandle(iChrome.pInfo.hThread);
+		CloseHandle(iChrome.pInfo.hProcess);
+
+	}
+
+}
+
+
+
+INFO iCalc;
+
+void calc() {
+
+
+	if (CreateProcessW(L"C:\\Windows\\SysWOW64\\calc.exe",NULL, NULL, NULL, TRUE, IDLE_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iCalc.sInfo, &iCalc.pInfo)) {
+
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"calc works");
+		CreateThread(NULL, 0, NewProcess, &iCalc, 0, NULL);
 
 
 
 	}
 	else {
 
-		SendMessageW(listbox, LB_ADDSTRING, 100, (LPARAM)L"error");
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"calc error");
 
 	}
+}
+
+void closeCalc() {
+
+	if (TerminateProcess(iCalc.pInfo.hProcess, 0)) {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"calc stopped");
+
+		CloseHandle(iCalc.pInfo.hThread);
+		CloseHandle(iCalc.pInfo.hProcess);
+
+	}
+
+}
+
+
+INFO iCmd;
+
+void cmd() {
+
+
+	if (CreateProcessW(L"C:\\Windows\\SysWOW64\\cmd.exe", NULL, NULL, NULL, TRUE, IDLE_PRIORITY_CLASS | CREATE_NEW_PROCESS_GROUP, NULL, NULL, &iCmd.sInfo, &iCmd.pInfo)) {
+
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"cmd works");
+		CreateThread(NULL, 0, NewProcess, &iCmd, 0, NULL);
+
+
+
+	}
+	else {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"cmd error");
+
+	}
+}
+
+void closeCmd() {
+
+	if (TerminateProcess(iCmd.pInfo.hProcess, 0)) {
+
+		SendMessageW(hListbox, LB_ADDSTRING, 100, (LPARAM)L"cmd stopped");
+
+		CloseHandle(iCmd.pInfo.hThread);
+		CloseHandle(iCmd.pInfo.hProcess);
+
+	}
+
 }
