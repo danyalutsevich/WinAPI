@@ -315,52 +315,32 @@ std::string* splitString(std::string str, char sym) {
 }
 
 void buttonPlus() {
-	try {
+	
 
-		HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
-		if (dll == NULL) {
 
-			MessageBoxW(NULL, L"error", L"dll", MB_OK | MB_ICONERROR);
-		}
-		else {
-			//plus_fun = (sqr_type2)GetProcAddress(dll, "plus");
-			long (*plus)(long, long);
-			plus = (sqr_type2)GetProcAddress(dll, "plus");
+	HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
+	long (*plus)(long,long);
+	plus = (long (*)(long, long))GetProcAddress(dll, "plus");
 
-			if (plus_fun) {
-
-				std::string* params;
-				wchar_t buff[100];
-				SendMessageW(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
-				params = splitString(std::to_string((char)buff), '+');
-
-				long a = std::atoi(params[0].c_str());
-				//SendMessageW(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)L"A");
-				SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)params[0].c_str());
-				long b = std::atoi(params[1].c_str());
-				//SendMessageW(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)L"B");
-				SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)params[1].c_str());
-				_snwprintf_s(buff, 100, L"%d + %d = %d", a, b, plus_fun(1, 1));
-				SendMessageW(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
+	if (plus) {
+		char buff[100];
+		SendMessageA(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
+		
+		std::string* res=splitString(buff,'+');
+		int a = atoi(res[0].c_str());
+		int b = atoi(res[1].c_str());
 
 
 
-				//MessageBoxW(NULL, buff, L"OK", MB_OK | MB_ICONINFORMATION);
-			}
-			else {
-
-				MessageBoxW(NULL, L"error", L"cube", MB_OK | MB_ICONERROR);
-
-
-			}
-
-
-		}
+		_snprintf_s(buff, 100, 100, "%d + %d  = %d", a,b, plus(a,b));
+		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
 
 	}
-	catch (std::exception& ex) {
+	else {
 
-		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)ex.what());
+		MessageBoxW(NULL, L"error", L"plus", MB_OK | MB_ICONERROR);
+
+
 	}
 
 }
@@ -375,12 +355,12 @@ void dec2hex() {
 		char buff[100];
 		SendMessageA(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
 		int param = atoi(buff);
-
-		_snprintf_s(buff,100, 100, "%d to hex = %s", param, dec2hex(param));
+		char* res = dec2hex(param);
+		_snprintf_s(buff,100, 100, "%d to hex = %s", param, res);
 	
 
 		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-
+		delete res;
 	}
 	else {
 
@@ -410,7 +390,7 @@ void hex2dec() {
 	}
 	else {
 
-		MessageBoxW(NULL, L"error", L"dec2hex", MB_OK | MB_ICONERROR);
+		MessageBoxW(NULL, L"error", L"hex2dec", MB_OK | MB_ICONERROR);
 
 
 	}
