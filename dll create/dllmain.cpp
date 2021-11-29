@@ -3,6 +3,8 @@
 #include <windows.h>
 #include <stdlib.h>
 #include <stdio.h>
+#include <iomanip>
+#include <sstream>
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -28,15 +30,23 @@ extern "C" {
 
 	}
 
-	DLLEXPORT wchar_t* dectosix(wchar_t* str) {
+	DLLEXPORT char* dec2hex(int dec) {
 
-		int x=_wtoi(str);
+		char* hex = new char[100];
+		_itoa_s(dec, hex, 99, 16);
 
-		wchar_t buff[100];
+		return hex;
+	}
 
-		_itow_s(x,buff,16);
+	DLLEXPORT int hex2dec(char* hex) {
 
-		return buff;
+		std::stringstream stream;
+
+		int dec;
+		stream << hex;
+		stream >> std::hex >> dec;
+
+		return dec;
 	}
 
 
