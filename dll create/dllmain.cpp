@@ -1,5 +1,8 @@
 // dllmain.cpp : Defines the entry point for the DLL application.
 #include "pch.h"
+#include <windows.h>
+#include <stdlib.h>
+#include <stdio.h>
 
 #define DLLEXPORT __declspec(dllexport)
 
@@ -12,6 +15,30 @@ extern "C" {
 		return x * x;
 
 	}
+
+	DLLEXPORT long cube(long x) {
+
+		return x * x * x;
+
+	}
+
+	DLLEXPORT long plus(long a, long b) {
+
+		return a + b;
+
+	}
+
+	DLLEXPORT wchar_t* dectosix(wchar_t* str) {
+
+		int x=_wtoi(str);
+
+		wchar_t buff[100];
+
+		_itow_s(x,buff,16);
+
+		return buff;
+	}
+
 
 }
 
