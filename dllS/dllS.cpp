@@ -14,11 +14,8 @@
 
 typedef long (*sqr_type)(long); // sqr_type ~~ long (*)(long)
 typedef long (*sqr_type2)(long, long); // sqr_type ~~ long (*)(long)
-typedef long (*sqr_type3)(wchar_t); // sqr_type ~~ long (*)(long)
 sqr_type sqr_fun; // sqr_type sqr_fun == long (*sqr_fun)(long)
 sqr_type cube_fun;
-sqr_type2 plus_fun;
-//sqr_type3 dec2hex_fun;
 
 
 // Global Variables:
@@ -182,11 +179,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			buttonCube();
 			break;
 		case CMD_BUTTON_DEC2HEX:
-
 			dec2hex();
 			break;
 		case CMD_BUTTON_HEX2DEC:
-			
 			hex2dec();
 			break;
 		case IDM_EXIT:
@@ -227,34 +222,20 @@ void buttonSqr() {
 		sqr_fun = (sqr_type)GetProcAddress(dll, "sqr");
 
 		if (sqr_fun) {
-
-
-
-
 			wchar_t buff[100];
 			SendMessageW(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
 			long param = _wtoi(buff);
-			_snwprintf_s(buff, 100, L"%d^3 = %d", param, sqr_fun(param));
+			_snwprintf_s(buff, 100, L"%d^2 = %d", param, sqr_fun(param));
 			SendMessageW(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-
-
-			//MessageBoxW(NULL, buff, L"OK", MB_OK | MB_ICONINFORMATION);
-
 		}
 		else {
 
 			MessageBoxW(NULL, L"error", L"sqr", MB_OK | MB_ICONERROR);
 		}
-
 	}
-
-
-
-
 }
+
 void buttonCube() {
-
-
 
 	HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
 	if (dll == NULL) {
@@ -269,17 +250,11 @@ void buttonCube() {
 			long param = _wtoi(buff);
 			_snwprintf_s(buff, 100, L"%d^3 = %d", param, cube_fun(param));
 			SendMessageW(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-
-
-			//MessageBoxW(NULL, buff, L"OK", MB_OK | MB_ICONINFORMATION);
 		}
 		else {
 
 			MessageBoxW(NULL, L"error", L"cube", MB_OK | MB_ICONERROR);
-
-
 		}
-
 	}
 }
 
@@ -303,70 +278,55 @@ std::string* splitString(std::string str, char sym) {
 		pos2 = str.find(sym, pos + 1);
 		res[i] = str.substr(pos, pos2 - pos);
 		pos = pos2;
-
-
 	}
 
 	res[parts - 1] = str.substr(pos + 1);
-
-
 
 	return res;
 }
 
 void buttonPlus() {
-	
-
 
 	HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
-	long (*plus)(long,long);
+	long (*plus)(long, long);
 	plus = (long (*)(long, long))GetProcAddress(dll, "plus");
 
 	if (plus) {
 		char buff[100];
 		SendMessageA(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
-		
-		std::string* res=splitString(buff,'+');
+
+		std::string* res = splitString(buff, '+');
 		int a = atoi(res[0].c_str());
 		int b = atoi(res[1].c_str());
 
-
-
-		_snprintf_s(buff, 100, 100, "%d + %d  = %d", a,b, plus(a,b));
+		_snprintf_s(buff, 100, 100, "%d + %d  = %d", a, b, plus(a, b));
 		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-
 	}
 	else {
 
 		MessageBoxW(NULL, L"error", L"plus", MB_OK | MB_ICONERROR);
-
-
 	}
-
 }
 
 void dec2hex() {
 
 	HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
 	char* (*dec2hex)(int);
-	dec2hex = (char*(*)(int))GetProcAddress(dll, "dec2hex");
+	dec2hex = (char* (*)(int))GetProcAddress(dll, "dec2hex");
 
 	if (dec2hex) {
 		char buff[100];
 		SendMessageA(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
 		int param = atoi(buff);
 		char* res = dec2hex(param);
-		_snprintf_s(buff,100, 100, "%d to hex = %s", param, res);
-	
+		_snprintf_s(buff, 100, 100, "%d to hex = %s", param, res);
+		delete res;
 
 		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-		delete res;
 	}
 	else {
 
 		MessageBoxW(NULL, L"error", L"dec2hex", MB_OK | MB_ICONERROR);
-
-
 	}
 }
 
@@ -375,24 +335,19 @@ void hex2dec() {
 	HMODULE dll = LoadLibraryW(L"..\\Debug\\dll create.dll");
 
 	int (*hex2dec)(const char*);
-	hex2dec = (int (*)(const char *))GetProcAddress(dll, "hex2dec");
+	hex2dec = (int (*)(const char*))GetProcAddress(dll, "hex2dec");
 
 	if (hex2dec) {
 		char buff[100];
 		SendMessageA(edit, WM_GETTEXT, MAX_LOADSTRING, (LPARAM)buff);
 
-
 		_snprintf_s(buff, 100, 100, "%s to dec = %d", buff, hex2dec(buff));
 
-
 		SendMessageA(listbox, LB_ADDSTRING, MAX_LOADSTRING, (LPARAM)buff);
-
 	}
 	else {
 
 		MessageBoxW(NULL, L"error", L"hex2dec", MB_OK | MB_ICONERROR);
-
-
 	}
 }
 
