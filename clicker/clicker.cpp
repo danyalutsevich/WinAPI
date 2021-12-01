@@ -212,7 +212,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		}
 		if (wParam == CMD_REDUCE_PROGRESS) {
-
+			
 			SendMessageW(hProgres, PBM_DELTAPOS, -5, 0);
 
 		}
@@ -250,12 +250,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			if (SendMessageW(hProgres, PBM_GETPOS, 0, 0) == 100) {
 				int res;
-				res=MessageBoxA(hWnd, "You won", "You won", MB_YESNO);
+				res=MessageBoxA(hWnd, "Want to play again?", "You won", MB_YESNO);
 
 				if (res == IDYES) {
 
 					CPSmax = 0;
 					score = 0;
+					SendMessageW(hProgres, PBM_SETPOS, 0, 0);
+
 				}
 
 			}
