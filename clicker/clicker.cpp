@@ -12,6 +12,7 @@
 #define CMD_BUTTON_EASY 1004
 #define CMD_BUTTON_HARD 1005
 #define CMD_HARD 1006
+#define CMD_EASY 1007
 
 
 
@@ -252,27 +253,52 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				}
 			}
-			if (SendMessageW(Level2, BM_GETCHECK, 0, 0)) {
+			
 
-				char buff[100];
-				SendMessageA(hEdit, WM_GETTEXT, 0, (LPARAM)buff);
+		}
+		/*if (wParam == CMD_HARD) {
+
+			char buff[100];
+			SendMessageA(hEdit, WM_GETTEXT, 0, (LPARAM)buff);
+
+			
+			if (atoi(buff)) {
+
+
+				MessageBoxA(hWnd, "L", "You lose", MB_ICONSTOP | MB_OK);
+
+				CPSmax = 0;
+				score = 0;
+				SendMessageW(hProgres, PBM_SETPOS, 0, 0);
+
+			}
+			else {
 				
-				if ((clock() / 1000) <= atoi(buff)) {
+				MessageBoxA(hWnd, "Set time", "Please", MB_ICONSTOP | MB_OK);
+
+			}
 
 
-					MessageBoxA(hWnd, "L", "You lose", MB_ICONSTOP | MB_OK);
+			
+
+		}*/
+		/*if (wParam == CMD_EASY) {
+
+			if (SendMessageW(hProgres, PBM_GETPOS, 0, 0) == 100) {
+				int res;
+				res = MessageBoxA(hWnd, "Want to play again?", "You won", MB_YESNO);
+
+				if (res == IDYES) {
 
 					CPSmax = 0;
 					score = 0;
 					SendMessageW(hProgres, PBM_SETPOS, 0, 0);
 
-
-
 				}
+
 			}
 
-		}
-		
+		}*/
 		break;
 
 	case WM_COMMAND:
@@ -303,20 +329,23 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 							   break;
 
-		case CMD_BUTTON_EASY:
+	/*	case CMD_BUTTON_EASY:
 
 			SendMessageW(Level1, BM_SETCHECK, BST_CHECKED, 0);
 			SendMessageW(Level2, BM_SETCHECK, BST_UNCHECKED, 0);
-			break;
+			break;*/
 
-		case CMD_BUTTON_HARD:
+	/*	case CMD_BUTTON_HARD:
 
-			
+			char buff[100];
+			SendMessageA(hEdit, WM_GETTEXT, 0, (LPARAM)buff);
+
+			SetTimer(hWnd,CMD_HARD,atoi(buff),NULL);
 			SendMessageW(Level1, BM_SETCHECK, BST_UNCHECKED, 0);
 			SendMessageW(Level2, BM_SETCHECK, BST_CHECKED, 0);
 
 
-			break;
+			break;*/
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
