@@ -8,6 +8,7 @@
 #define CMD_BUTTON_CLICKER 1000
 #define CMD_CPS 1001
 #define CMD_REDUCE_PROGRESS 1002
+#define CMD_TIMER 1003
 
 
 
@@ -19,7 +20,10 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HWND clicker;
 HWND scoreS;
 HWND CPS;
+HWND CPSmaxS;
 HWND hProgres;
+HWND hTimer;
+COLORREF color;
 
 
 // Forward declarations of functions included in this code module:
@@ -38,11 +42,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 
 	// TODO: Place code here.
 
+
+
 	// Initialize global strings
+	srand(time(0));
+	color = RGB(rand() % 255, rand() % 255, rand() % 255);
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_CLICKER, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
-
 	// Perform application initialization:
 	if (!InitInstance(hInstance, nCmdShow))
 	{
@@ -66,7 +73,6 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	return (int)msg.wParam;
 }
 
-COLORREF color;
 
 //
 //  FUNCTION: MyRegisterClass()
@@ -76,8 +82,7 @@ COLORREF color;
 ATOM MyRegisterClass(HINSTANCE hInstance)
 {
 
-	srand(time(0));
-	color = RGB(rand() % 255, rand() % 255, rand() % 255);
+
 	WNDCLASSEXW wcex;
 
 	wcex.cbSize = sizeof(WNDCLASSEX);
@@ -138,6 +143,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 int score = 0;
 int clicksPerSec = 0;
+int CPSmax = 0;
+
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
 	switch (message)
@@ -158,7 +165,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		s_hFont = CreateFontIndirect(&logFont);
 
 
-		const long nFontSize2 = 15;
+		const long nFontSize2 = 12;
 
 		HFONT s_hFont2;
 		HDC hdc2 = GetDC(hWnd);
@@ -171,7 +178,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		clicker = CreateWindowW(L"Button", L"", WS_CHILD | WS_VISIBLE, 10, 300, 505, 505, hWnd, (HMENU)CMD_BUTTON_CLICKER, hInst, NULL);
 		scoreS = CreateWindowW(L"Static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER, 0, 0, 525, 100, hWnd, NULL, hInst, NULL);
-		CPS = CreateWindowW(L"Static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER, 520 / 2 - 50, 130, 100, 23, hWnd, NULL, hInst, NULL);
+		CPS = CreateWindowW(L"Static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER | WS_BORDER, 520 / 2 - 50, 130, 100, 23, hWnd, NULL, hInst, NULL);
+		CPSmaxS = CreateWindowW(L"Static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER | WS_BORDER, 520 / 2 - 50, 152, 100, 25, hWnd, NULL, hInst, NULL);
+		hTimer = CreateWindowW(L"Static", L"", WS_CHILD | WS_VISIBLE | SS_CENTER | WS_BORDER, 520 / 2 - 50, 176, 100, 25, hWnd, NULL, hInst, NULL);
 		hProgres = CreateWindowW(PROGRESS_CLASSW, L"", WS_CHILD | WS_VISIBLE | PBS_MARQUEE | PBS_SMOOTH, 0, 100, 524, 15, hWnd, 0, hInst, NULL);
 		SendMessageW(hProgres, PBM_SETRANGE, -5, MAKELPARAM(0, 100));
 		SendMessageW(hProgres, PBM_SETBARCOLOR, 0, color);
@@ -179,12 +188,15 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		SetTimer(hWnd, CMD_CPS, 1000, NULL);
 		SetTimer(hWnd, CMD_REDUCE_PROGRESS, 1000, NULL);
+		SetTimer(hWnd, CMD_TIMER, 1, NULL);
 
 		SendMessage(scoreS, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
-
-
-
 		SendMessage(CPS, WM_SETFONT, (WPARAM)s_hFont2, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(CPSmaxS, WM_SETFONT, (WPARAM)s_hFont2, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(hTimer, WM_SETFONT, (WPARAM)s_hFont2, (LPARAM)MAKELONG(TRUE, 0));
+
+
+
 
 		break;
 	}
@@ -204,6 +216,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			SendMessageW(hProgres, PBM_DELTAPOS, -5, 0);
 
 		}
+		if (wParam == CMD_TIMER) {
+
+			char buff[100];
+			
+			_snprintf_s(buff, 100, 100, "%d:%d:%d:%d", (clock() / 3600000) % 24, (clock() /60000)%60, (clock() /1000)%60, clock() % 1000);
+			SendMessageA(hTimer, WM_SETTEXT, 0, (LPARAM)buff);
+
+		}
 		break;
 
 	case WM_COMMAND:
@@ -212,17 +232,37 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case CMD_BUTTON_CLICKER:
+		case CMD_BUTTON_CLICKER: {
+
+
 			score += SendMessageW(hProgres, PBM_DELTAPOS, 1, 0) + 1;
 			char buff[100];
 			_itoa_s(score, buff, 10);
 			SendMessageA(scoreS, WM_SETTEXT, 0, (LPARAM)buff);
 
-
-
 			clicksPerSec++;
+			if (clicksPerSec > CPSmax) {
+				CPSmax = clicksPerSec;
 
-			break;
+				_snprintf_s(buff, 100, 100, "max: %d", CPSmax);
+				SendMessageA(CPSmaxS, WM_SETTEXT, 0, (LPARAM)buff);
+			}
+
+			if (SendMessageW(hProgres, PBM_GETPOS, 0, 0) == 100) {
+				int res;
+				res=MessageBoxA(hWnd, "You won", "You won", MB_YESNO);
+
+				if (res == IDYES) {
+
+					CPSmax = 0;
+					score = 0;
+				}
+
+			}
+
+		}
+
+							   break;
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;

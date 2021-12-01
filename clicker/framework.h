@@ -9,6 +9,8 @@
 // Windows Header Files
 #include <windows.h>
 #include <CommCtrl.h>
+#include <stdlib.h>
+#include <stdio.h>
 // C RunTime Header Files
 #include <stdlib.h>
 #include <malloc.h>
