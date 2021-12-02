@@ -1,0 +1,3 @@
+﻿  GDI.cpp
+C:\Users\luce_dp7x\source\repos\GDI\GDI\GDI.cpp(144,13): warning C4244: 'argument': conversion from 'time_t' to 'unsigned int', possible loss of data
+  GDI.vcxproj -> C:\Users\luce_dp7x\source\repos\GDI\Debug\GDI.exe
