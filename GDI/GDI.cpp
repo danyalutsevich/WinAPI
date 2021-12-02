@@ -145,6 +145,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 bool LButtonPressed;
 bool RButtonPressed;
+int vertex;
+POINT *polygon;
 COORD prevCord;
 int penWidth;
 int penHeight;
@@ -157,6 +159,7 @@ int bb;
 int currentPen;
 
 bool widthHeight;
+
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -203,6 +206,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 		dc = GetDC(hWnd);
+
+		vertex = 3;
+		polygon = new POINT[vertex];
 
 		penHeight = 10;
 		penWidth = 10;
@@ -289,7 +295,6 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				SelectObject(dc, brush);
 				SelectObject(dc, bPen);
-				//Polygon(dc,);
 				Rectangle(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2));
 
 			}
@@ -303,6 +308,8 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else if (currentPen == CMD_BUTTON_POLYGON) {
 
+				//Polygon(dc,);
+				SetPixel(dc, rand()%1920, rand()%1080, RGB(rand()%255, rand() % 255, rand() % 255));
 
 			}
 
