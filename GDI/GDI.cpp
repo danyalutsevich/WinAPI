@@ -8,6 +8,8 @@
 #define CMD_BUTTON_ELLIPS 1001
 #define CMD_BUTTON_PEN 1002
 #define CMD_BUTTON_RECTANGLE 1003
+#define CMD_BUTTON_POLYGON 1004
+#define CMD_BUTTON_ROUNDRECT 1005
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -21,6 +23,8 @@ HWND sPenWidth;
 HWND sEllipse;
 HWND sPen;
 HWND sRectangle;
+HWND sPolygon;
+HWND sRoundRect;
 
 
 HPEN pen;
@@ -181,12 +185,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		currentPen = CMD_BUTTON_PEN;
 
 
-		sPenWidth = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD, 0, 20, 20, 20, hWnd, NULL, hInst, NULL);
-		sPenHeight = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD, 0, 0, 20, 20, hWnd, NULL, hInst, NULL);
+		sPenWidth = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 20, 20, 20, hWnd, NULL, hInst, NULL);
+		sPenHeight = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 0, 20, 20, hWnd, NULL, hInst, NULL);
 
 		sPen = CreateWindowW(L"Button", L"✒", WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_PEN, hInst, NULL);
 		sEllipse = CreateWindowW(L"Button", L"⬯", WS_VISIBLE | WS_CHILD | SS_CENTER, 40, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_ELLIPS, hInst, NULL);
 		sRectangle = CreateWindowW(L"Button", L"▭", WS_VISIBLE | WS_CHILD | SS_CENTER, 60, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_RECTANGLE, hInst, NULL);
+		sRoundRect = CreateWindowW(L"Button", L"▢", WS_VISIBLE | WS_CHILD | SS_CENTER, 80, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_ROUNDRECT, hInst, NULL);
+		sPolygon = CreateWindowW(L"Button", L"⎔", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_POLYGON, hInst, NULL);
 
 
 		SendMessage(sPenWidth, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
@@ -287,6 +293,18 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				Rectangle(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2));
 
 			}
+			else if (currentPen == CMD_BUTTON_ROUNDRECT)
+			{
+
+
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+				RoundRect(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2),penWidth/2,penHeight/2);
+			}
+			else if (currentPen == CMD_BUTTON_POLYGON) {
+
+
+			}
 
 		}
 
@@ -351,6 +369,14 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 			currentPen = CMD_BUTTON_RECTANGLE;
 			break;
+		case CMD_BUTTON_ROUNDRECT:
+
+			currentPen = CMD_BUTTON_ROUNDRECT;
+			break;
+		case CMD_BUTTON_POLYGON:
+
+			currentPen = CMD_BUTTON_POLYGON;
+			break;
 
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
@@ -376,7 +402,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		ReleaseDC(hWnd, dc);
 		DeleteObject(pen);
 
-
+		DeleteObject(bPen);
+		DeleteObject(brush);
+		
 		PostQuitMessage(0);
 		break;
 	default:
