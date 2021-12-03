@@ -16,7 +16,11 @@ HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+
 HDC dc;
+HDC memoryDC; //DC for memory copy of picture
+HBITMAP memoryPicture;
+
 
 HWND sPenHeight;
 HWND sPenWidth;
@@ -206,6 +210,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 
 		dc = GetDC(hWnd);
+		memoryDC = CreateCompatibleDC(dc);
+		RECT rect;
+		GetClientRect(hWnd,&rect);
+
+		memoryPicture = CreateCompatibleBitmap(memoryDC, rect.right - rect.left, rect.bottom - rect.top);
+
 
 		vertex = 3;
 		polygon = new POINT[vertex];
@@ -313,6 +323,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 				//POINT vert[3] = { penWidth + GET_X_LPARAM(lParam),penHeight + GET_Y_LPARAM(lParam),penWidth -GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam),penWidth + GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam) };
 				//Polygon(dc,vert,3);
+				for(int i=0;i<100000;i++)
 				SetPixel(dc, rand()%1920, rand()%1080, RGB(rand()%255, rand() % 255, rand() % 255));
 
 			}
