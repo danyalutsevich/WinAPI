@@ -169,7 +169,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_CREATE: {
 
 
-		const WCHAR fontName[] = L"Cascadia Mono";
+		const WCHAR fontName[] = L"Comic Sans";
 		const long nFontSize = 10;
 
 		HFONT s_hFont;
@@ -308,7 +308,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			}
 			else if (currentPen == CMD_BUTTON_POLYGON) {
 
-				//Polygon(dc,);
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+
+				//POINT vert[3] = { penWidth + GET_X_LPARAM(lParam),penHeight + GET_Y_LPARAM(lParam),penWidth -GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam),penWidth + GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam) };
+				//Polygon(dc,vert,3);
 				SetPixel(dc, rand()%1920, rand()%1080, RGB(rand()%255, rand() % 255, rand() % 255));
 
 			}
