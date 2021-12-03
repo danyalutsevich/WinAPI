@@ -1,4 +1,4 @@
-// GDI.cpp : Defines the entry point for the application.
+﻿// GDI.cpp : Defines the entry point for the application.
 //
 
 #include "framework.h"
@@ -6,15 +6,35 @@
 
 #define MAX_LOADSTRING 100
 #define CMD_BUTTON_ELLIPS 1001
+#define CMD_BUTTON_PEN 1002
+#define CMD_BUTTON_RECTANGLE 1003
+#define CMD_BUTTON_POLYGON 1004
+#define CMD_BUTTON_ROUNDRECT 1005
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
+
+
 HDC dc;
+HDC memoryDC; //DC for memory copy of picture
+HBITMAP memoryPicture;
+
+
+HWND sPenHeight;
+HWND sPenWidth;
+HWND sEllipse;
+HWND sPen;
+HWND sRectangle;
+HWND sPolygon;
+HWND sRoundRect;
+
+
 HPEN pen;
-HWND penSizeS;
-HWND elipsS;
+HPEN bPen;
+
+HBRUSH brush;
 
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
@@ -126,13 +146,23 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 //  WM_DESTROY  - post a quit message and return
 //
 //
+
 bool LButtonPressed;
 bool RButtonPressed;
+int vertex;
+POINT *polygon;
 COORD prevCord;
-int penSize;
-int r;
+int penWidth;
+int penHeight;
+int r; //for pen
 int g;
 int b;
+int rb; //b for brush
+int gb;
+int bb;
+int currentPen;
+
+bool widthHeight;
 
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -142,38 +172,89 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE: {
 		srand(time(0));
-		LButtonPressed = false;
-		RButtonPressed = false;
-
-		penSizeS = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD, 0, 0, 20, 20, hWnd, NULL, hInst, NULL);
-		elipsS = CreateWindowW(L"Button", L"elips", WS_VISIBLE | WS_CHILD, 20, 0, 50, 20, hWnd, (HMENU)CMD_BUTTON_ELLIPS, hInst, NULL);
 
 
-		penSize = rand() % 100;
+
+
+
+		penHeight = 10;
+		penWidth = 10;
 		r = rand() % 255;
 		g = rand() % 255;
 		b = rand() % 255;
+		rb = rand() % 255;
+		gb = rand() % 255;
+		bb = rand() % 255;
 
-		pen = CreatePen(PS_SOLID, penSize, RGB(r, g, b));
+		pen = CreatePen(PS_SOLID, penHeight, RGB(r, g, b));
+		bPen = CreatePen(PS_SOLID, 1, RGB(r, g, b));
+
 		dc = GetDC(hWnd);
-		break;
+		brush = CreateSolidBrush(RGB(rb, gb, bb));
+		
+		HBRUSH bg= CreateSolidBrush(GetBkColor(dc));
+
+
+		const WCHAR fontName[] = L"Comic Sans";
+		const long nFontSize = 10;
+
+		HFONT s_hFont;
+		HDC hdc = GetDC(hWnd);
+		LOGFONT logFont = { 0 };
+		logFont.lfHeight = -MulDiv(nFontSize, GetDeviceCaps(hdc, LOGPIXELSY), 72);
+		logFont.lfWeight = FW_BOLD;
+		wcscpy_s(logFont.lfFaceName, fontName);
+		s_hFont = CreateFontIndirect(&logFont);
+
+
+		widthHeight = true;
+		LButtonPressed = false;
+		RButtonPressed = false;
+		currentPen = CMD_BUTTON_PEN;
+
+
+		sPenWidth = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 20, 20, 20, hWnd, NULL, hInst, NULL);
+		sPenHeight = CreateWindowW(L"Static", L"10", WS_VISIBLE | WS_CHILD | SS_CENTER, 0, 0, 20, 20, hWnd, NULL, hInst, NULL);
+
+		sPen = CreateWindowW(L"Button", L"✒", WS_VISIBLE | WS_CHILD | SS_CENTER, 20, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_PEN, hInst, NULL);
+		sEllipse = CreateWindowW(L"Button", L"⬯", WS_VISIBLE | WS_CHILD | SS_CENTER, 40, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_ELLIPS, hInst, NULL);
+		sRectangle = CreateWindowW(L"Button", L"▭", WS_VISIBLE | WS_CHILD | SS_CENTER, 60, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_RECTANGLE, hInst, NULL);
+		sRoundRect = CreateWindowW(L"Button", L"▢", WS_VISIBLE | WS_CHILD | SS_CENTER, 80, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_ROUNDRECT, hInst, NULL);
+		sPolygon = CreateWindowW(L"Button", L"⎔", WS_VISIBLE | WS_CHILD | SS_CENTER, 100, 0, 20, 20, hWnd, (HMENU)CMD_BUTTON_POLYGON, hInst, NULL);
+
+
+		SendMessage(sPenWidth, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(sPenHeight, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(sPen, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(sEllipse, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+		SendMessage(sRectangle, WM_SETFONT, (WPARAM)s_hFont, (LPARAM)MAKELONG(TRUE, 0));
+
+
+		
+		memoryDC = CreateCompatibleDC(dc);
+		RECT rect;
+		GetClientRect(hWnd,&rect);
+
+		memoryPicture = CreateCompatibleBitmap(memoryDC, rect.right - rect.left, rect.bottom - rect.top);
+
+		SelectObject(memoryDC, memoryPicture);
+		FillRect(memoryDC,&rect,bg);
+
+		vertex = 3;
+		polygon = new POINT[vertex];
+
+
 	}
+				  break;
+
+
 	case WM_RBUTTONDOWN: {
 
-
-		while (1) {
-			HBRUSH brush = CreateSolidBrush(RGB(rand() % 255, rand() % 255, rand() % 255));
-			SelectObject(dc, brush);
-
-			Ellipse(dc, rand() % 1000, rand() % 1000, rand() % 2000, rand() % 1000);
-			DeleteObject(brush);
-		}
-		//Ellipse(dc,100,100,200,200);
+		widthHeight ? widthHeight = false : widthHeight = true;
 		break;
 
 	}
-	case WM_LBUTTONDOWN:
-	{
+	case WM_LBUTTONDOWN: {
 		LButtonPressed = true;
 		prevCord.Y = GET_Y_LPARAM(lParam);
 		prevCord.X = GET_X_LPARAM(lParam);
@@ -181,25 +262,84 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		break;
 	}
-	case WM_LBUTTONUP:
-	{
+	case WM_LBUTTONUP: {
 		LButtonPressed = false;
 		ReleaseCapture();
 		break;
+	}
+	case WM_MBUTTONDOWN: {
+
+		r = rand() % 255;
+		g = rand() % 255;
+		b = rand() % 255;
+		rb = rand() % 255;
+		gb = rand() % 255;
+		bb = rand() % 255;
+
+		DeleteObject(pen);
+		DeleteObject(bPen);
+		DeleteObject(brush);
+
+		pen = CreatePen(PS_SOLID, penHeight, RGB(r, g, b));
+		bPen = CreatePen(PS_SOLID, 1, RGB(r, g, b));
+
+		brush = CreateSolidBrush(RGB(rb, gb, bb));
+
+
 	}
 	case WM_MOUSEMOVE:
 	{
 
 		if (LButtonPressed) {
 
+			if (currentPen == CMD_BUTTON_PEN) {
 
-			HPEN savedPen = (HPEN)SelectObject(dc, pen);
-			MoveToEx(dc, prevCord.X, prevCord.Y, NULL);
-			LineTo(dc, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				HPEN savedPen = (HPEN)SelectObject(dc, pen);
+				MoveToEx(dc, prevCord.X, prevCord.Y, NULL);
+				LineTo(dc, GET_X_LPARAM(lParam), GET_Y_LPARAM(lParam));
+				prevCord.Y = GET_Y_LPARAM(lParam);
+				prevCord.X = GET_X_LPARAM(lParam);
+				SelectObject(dc, savedPen);
+			}
+			else if (currentPen == CMD_BUTTON_ELLIPS) {
 
-			prevCord.Y = GET_Y_LPARAM(lParam);
-			prevCord.X = GET_X_LPARAM(lParam);
-			SelectObject(dc, savedPen);
+
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+
+				Ellipse(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2));
+
+
+
+
+
+			}
+			else if (currentPen == CMD_BUTTON_RECTANGLE) {
+
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+				Rectangle(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2));
+
+			}
+			else if (currentPen == CMD_BUTTON_ROUNDRECT)
+			{
+
+
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+				RoundRect(dc, GET_X_LPARAM(lParam) - (penWidth / 2), GET_Y_LPARAM(lParam) - (penHeight / 2), GET_X_LPARAM(lParam) + (penWidth / 2), GET_Y_LPARAM(lParam) + (penHeight / 2),penWidth/2,penHeight/2);
+			}
+			else if (currentPen == CMD_BUTTON_POLYGON) {
+
+				SelectObject(dc, brush);
+				SelectObject(dc, bPen);
+
+				POINT vert[3] = { penWidth + GET_X_LPARAM(lParam),penHeight + GET_Y_LPARAM(lParam),penWidth -GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam),penWidth + GET_X_LPARAM(lParam),penHeight - GET_Y_LPARAM(lParam) };
+				Polygon(dc,vert,3);
+				//for(int i=0;i<100000;i++)
+				//SetPixel(dc, rand()%1920, rand()%1080, RGB(rand()%255, rand() % 255, rand() % 255));
+
+			}
 
 		}
 
@@ -208,20 +348,41 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	case WM_MOUSEWHEEL:
 
 		char buff[100];
-		if (((int)wParam) > 0) {
+		if (widthHeight) {
 
-			penSize++;
-			pen = CreatePen(PS_SOLID, penSize, RGB(r, g, b));
-			_itoa_s(penSize, buff, 10);
-			SendMessageA(penSizeS, WM_SETTEXT, 0, (LPARAM)buff);
+			if (((int)wParam) > 0) {
+
+				penHeight++;
+				DeleteObject(pen);
+				pen = CreatePen(PS_SOLID, penHeight, RGB(r, g, b));
+				_itoa_s(penHeight, buff, 10);
+				SendMessageA(sPenHeight, WM_SETTEXT, 0, (LPARAM)buff);
+			}
+			else if (penHeight > 0) {
+
+				penHeight--;
+				DeleteObject(pen);
+				pen = CreatePen(PS_SOLID, penHeight, RGB(r, g, b));
+
+				_itoa_s(penHeight, buff, 10);
+				SendMessageA(sPenHeight, WM_SETTEXT, 0, (LPARAM)buff);
+			}
 		}
-		else if (penSize > 0) {
+		else {
 
-			penSize--;
-			pen = CreatePen(PS_SOLID, penSize, RGB(r, g, b));
+			if (((int)wParam) > 0) {
 
-			_itoa_s(penSize, buff, 10);
-			SendMessageA(penSizeS, WM_SETTEXT, 0, (LPARAM)buff);
+				penWidth++;
+				_itoa_s(penWidth, buff, 10);
+				SendMessageA(sPenWidth, WM_SETTEXT, 0, (LPARAM)buff);
+			}
+			else if (penWidth > 0) {
+
+				penWidth--;
+				_itoa_s(penWidth, buff, 10);
+				SendMessageA(sPenWidth, WM_SETTEXT, 0, (LPARAM)buff);
+			}
+
 		}
 
 		break;
@@ -231,6 +392,27 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
+		case CMD_BUTTON_PEN:
+
+			currentPen = CMD_BUTTON_PEN;
+			break;
+		case CMD_BUTTON_ELLIPS:
+
+			currentPen = CMD_BUTTON_ELLIPS;
+			break;
+		case CMD_BUTTON_RECTANGLE:
+
+			currentPen = CMD_BUTTON_RECTANGLE;
+			break;
+		case CMD_BUTTON_ROUNDRECT:
+
+			currentPen = CMD_BUTTON_ROUNDRECT;
+			break;
+		case CMD_BUTTON_POLYGON:
+
+			currentPen = CMD_BUTTON_POLYGON;
+			break;
+
 		case IDM_ABOUT:
 			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
 			break;
@@ -247,6 +429,22 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
+
+		RECT r;
+		GetClientRect(hWnd, &r);
+
+
+		BitBlt(dc, //destinaton DC
+			0,0,// start point
+			r.right-r.left, // width
+			r.bottom-r.top, //height
+			memoryDC, // source DC
+			0,0, // start point (in source)
+			SRCCOPY
+			);
+		HBITMAP bmp = CreateBitmap(100,100,256,3,memoryDC);
+		//CreateBMPF
+		
 		EndPaint(hWnd, &ps);
 	}
 	break;
@@ -255,7 +453,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		ReleaseDC(hWnd, dc);
 		DeleteObject(pen);
 
-
+		DeleteObject(bPen);
+		DeleteObject(brush);
+		
 		PostQuitMessage(0);
 		break;
 	default:
