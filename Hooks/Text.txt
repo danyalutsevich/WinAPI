@@ -24,5 +24,16 @@ WinAPI содержит предопределенные константы дл
 	(HINSTANCE)NULL, отсчет адреса
 	GetCurrentThreadId()); номер потока
 
+	return CallNextHookEx(kbHOOK,nCode,wParam,lParam); - замыкание петли - вызов следующего хука (предидущий адрес)
+
+--------------------------------
+
+	хуки низкого уровня (LL - LowLevel)
+
+	kbLL = SetWindowsHookExW(WH_KEYBOARD_LL,
+	KbHookProcLL,
+	GetModuleHandle(NULL), // дескриптор модуля (DLL / EXE)
+	0);
+
 
 

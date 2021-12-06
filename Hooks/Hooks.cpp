@@ -7,6 +7,8 @@
 #define MAX_LOADSTRING 100
 #define CMD_KB_HOOK_START 1001
 #define CMD_KB_HOOK_STOP 1002
+#define CMD_KB_LL_START 1003
+#define CMD_KB_LL_STOP 1004
 
 
 // Global Variables:
@@ -16,6 +18,7 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
 HWND listbox;
 HHOOK kbHOOK;
+HHOOK kbLL;
 
 wchar_t str[MAX_LOADSTRING];
 
@@ -28,6 +31,11 @@ INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 DWORD   CALLBACK    StartKbHook(LPVOID);
 DWORD   CALLBACK    StopKbHook(LPVOID);
 LRESULT CALLBACK    KbHookProc(int, WPARAM, LPARAM);
+
+
+DWORD   CALLBACK    StartKbHookLL(LPVOID);
+DWORD   CALLBACK    StopKbHookLL(LPVOID);
+LRESULT CALLBACK    KbHookProcLL(int, WPARAM, LPARAM);
 
 
 
@@ -143,9 +151,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 	case WM_CREATE:
 
-		listbox = CreateWindowW(L"Listbox", L"", WS_VISIBLE | WS_CHILD, 100, 10, 500, 500, hWnd, NULL, hInst, NULL);
+		listbox = CreateWindowW(L"Listbox", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 100, 10, 500, 500, hWnd, NULL, hInst, NULL);
 		CreateWindowW(L"Button", L"Start", WS_VISIBLE | WS_CHILD, 10, 10, 75, 23, hWnd, (HMENU)CMD_KB_HOOK_START, hInst, NULL);
 		CreateWindowW(L"Button", L"Stop", WS_VISIBLE | WS_CHILD, 10, 40, 75, 23, hWnd, (HMENU)CMD_KB_HOOK_STOP, hInst, NULL);
+
+		CreateWindowW(L"Button", L"Start LL", WS_VISIBLE | WS_CHILD, 10, 70, 75, 23, hWnd, (HMENU)CMD_KB_LL_START, hInst, NULL);
+		CreateWindowW(L"Button", L"Stop LL", WS_VISIBLE | WS_CHILD, 10, 100, 75, 23, hWnd, (HMENU)CMD_KB_LL_STOP, hInst, NULL);
 
 		break;
 	case WM_COMMAND:
@@ -161,6 +172,13 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		case CMD_KB_HOOK_STOP:
 			StopKbHook(NULL);
 
+			break;
+
+		case CMD_KB_LL_START:
+			StartKbHookLL(NULL);
+			break;
+		case CMD_KB_LL_STOP:
+			StopKbHookLL(NULL);
 			break;
 
 
@@ -242,8 +260,9 @@ DWORD   CALLBACK    StopKbHook(LPVOID params) {
 
 	if (kbHOOK) {
 
+		UnhookWindowsHookEx(kbHOOK);
 		_snwprintf_s(str, MAX_LOADSTRING, L"hook stopped");
-
+		kbHOOK = NULL;
 	}
 	else {
 
@@ -260,13 +279,79 @@ DWORD   CALLBACK    StopKbHook(LPVOID params) {
 
 LRESULT CALLBACK    KbHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
+	_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", wParam, lParam);
 
+	SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+
+	return CallNextHookEx(kbHOOK, nCode, wParam, lParam);
+
+}
+
+
+
+DWORD   CALLBACK    StartKbHookLL(LPVOID params) {
+
+	kbLL = SetWindowsHookExW(WH_KEYBOARD_LL, KbHookProcLL, GetModuleHandle(NULL), 0);
+
+	if (kbLL) {
+
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook started");
+
+	}
+	else {
+
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook start failed");
+
+
+	}
+	SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+	return 0;
+}
+
+DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
+
+	if (kbLL) {
+
+		UnhookWindowsHookEx(kbLL);
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook stopped");
+		kbLL = NULL;
+	}
+	else {
+
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook stop failed");
+
+	}
+
+	SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
 
 
 
 	return 0;
 }
 
+LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
+
+	if (nCode == HC_ACTION) {
+
+		if (wParam == WM_KEYDOWN || wParam == WM_SYSKEYDOWN) {
+
+			KBDLLHOOKSTRUCT keyInfo = *((KBDLLHOOKSTRUCT*)lParam);
+
+			_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", keyInfo.vkCode, keyInfo.scanCode);
+			SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+		}
+
+	}
+
+	//_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", wParam, lParam);
+	//SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+
+	return CallNextHookEx(kbLL, nCode, wParam, lParam);
+}
 
 
 
