@@ -5,17 +5,32 @@
 #include "Hooks.h"
 
 #define MAX_LOADSTRING 100
+#define CMD_KB_HOOK_START 1001
+#define CMD_KB_HOOK_STOP 1002
+
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
 WCHAR szTitle[MAX_LOADSTRING];                  // The title bar text
 WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 
+HWND listbox;
+HHOOK kbHOOK;
+
+wchar_t str[MAX_LOADSTRING];
+
 // Forward declarations of functions included in this code module:
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
+
+DWORD   CALLBACK    StartKbHook(LPVOID);
+DWORD   CALLBACK    StopKbHook(LPVOID);
+LRESULT CALLBACK    KbHookProc(int, WPARAM, LPARAM);
+
+
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
                      _In_opt_ HINSTANCE hPrevInstance,
@@ -125,12 +140,30 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
     switch (message)
     {
+
+    case WM_CREATE:
+
+        listbox = CreateWindowW(L"Listbox",L"",WS_VISIBLE|WS_CHILD,100,10,500,500,hWnd,NULL,hInst,NULL);
+        CreateWindowW(L"Button",L"Start",WS_VISIBLE|WS_CHILD,10,10,75,23,hWnd,(HMENU)CMD_KB_HOOK_START,hInst,NULL);
+        CreateWindowW(L"Button",L"Stop",WS_VISIBLE|WS_CHILD,10,40,75,23,hWnd,(HMENU)CMD_KB_HOOK_STOP,hInst,NULL);
+
+        break;
     case WM_COMMAND:
         {
             int wmId = LOWORD(wParam);
             // Parse the menu selections:
             switch (wmId)
             {
+            case CMD_KB_HOOK_START:
+                StartKbHook(NULL);
+                break;
+
+            case CMD_KB_HOOK_STOP:
+                StopKbHook(NULL);
+
+                break;
+
+
             case IDM_ABOUT:
                 DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
                 break;
@@ -178,3 +211,44 @@ INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
     }
     return (INT_PTR)FALSE;
 }
+
+
+
+
+DWORD   CALLBACK    StartKbHook(LPVOID params) {
+
+    _snwprintf_s(str,MAX_LOADSTRING,L"start");
+    SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+
+    return 0;
+}
+
+DWORD   CALLBACK    StopKbHook(LPVOID params) {
+
+    _snwprintf_s(str,MAX_LOADSTRING,L"stop");
+    SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+
+
+
+    return 0;
+}
+
+LRESULT CALLBACK    KbHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
+
+
+
+
+
+    return 0;
+}
+
+
+
+
+
+
+
+
+
+
