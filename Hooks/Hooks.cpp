@@ -19,6 +19,10 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 HWND listbox;
 HHOOK kbHOOK;
 HHOOK kbLL;
+FILE* f;
+
+
+
 
 wchar_t str[MAX_LOADSTRING];
 
@@ -292,16 +296,16 @@ LRESULT CALLBACK    KbHookProc(int nCode, WPARAM wParam, LPARAM lParam) {
 
 DWORD   CALLBACK    StartKbHookLL(LPVOID params) {
 
-	kbLL = SetWindowsHookExW(WH_KEYBOARD_LL, KbHookProcLL, GetModuleHandle(NULL), 0);
 
 	if (kbLL) {
 
-		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook started");
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook works");
 
 	}
 	else {
+		kbLL = SetWindowsHookExW(WH_KEYBOARD_LL, KbHookProcLL, GetModuleHandle(NULL), 0);
 
-		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook start failed");
+		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook started");
 
 
 	}
@@ -310,12 +314,22 @@ DWORD   CALLBACK    StartKbHookLL(LPVOID params) {
 	return 0;
 }
 
+
+
+
 DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
+	PROCESS_INFORMATION pInfo;
+	STARTUPINFO sInfo;
+	
+
+	ZeroMemory(&pInfo, sizeof(PROCESS_INFORMATION));
+	ZeroMemory(&sInfo, sizeof(STARTUPINFO));
 
 	if (kbLL) {
 
 		UnhookWindowsHookEx(kbLL);
 		_snwprintf_s(str, MAX_LOADSTRING, L"LL hook stopped");
+		CreateProcessW(L"C:\\Windows\\notepad.exe", (LPWSTR)L"C:\\Users\\luce_dp7x\\source\\repos\\Hooks\\\Hooks\\file.txt", NULL, NULL, TRUE, 0, NULL, NULL, &sInfo, &pInfo);
 		kbLL = NULL;
 	}
 	else {
@@ -339,15 +353,17 @@ LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 			KBDLLHOOKSTRUCT keyInfo = *((KBDLLHOOKSTRUCT*)lParam);
 
-			_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", keyInfo.vkCode, keyInfo.scanCode);
-			SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+			_snwprintf_s(str, MAX_LOADSTRING, L"%c %d",(char)keyInfo.vkCode, keyInfo.vkCode);
+	SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+			
+
+			f = fopen("file.txt","at");
+			fputc((char)keyInfo.vkCode,f);
 
 		}
 
 	}
 
-	//_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", wParam, lParam);
-	//SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
 
 
 	return CallNextHookEx(kbLL, nCode, wParam, lParam);
