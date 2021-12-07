@@ -33,9 +33,19 @@ HHOOK kbHOOK;
 HHOOK kbLL;
 HHOOK msLL;
 
-
 HDC dc;
+HDC memoryDC;
+
+HBITMAP memoryPictureTrace;
+
+
+
 HDC msDc;
+HDC MSmemoryDC; //DC for memory copy of picture
+
+HBITMAP memoryPicture;
+
+
 HWND msTrace;
 
 HPEN msPen;
@@ -58,17 +68,13 @@ DWORD   CALLBACK    StartKbHook(LPVOID);
 DWORD   CALLBACK    StopKbHook(LPVOID);
 LRESULT CALLBACK    KbHookProc(int, WPARAM, LPARAM);
 
-
 DWORD   CALLBACK    StartKbHookLL(LPVOID);
 DWORD   CALLBACK    StopKbHookLL(LPVOID);
 LRESULT CALLBACK    KbHookProcLL(int, WPARAM, LPARAM);
 
-
 DWORD   CALLBACK    StartMsHookLL(LPVOID);
 DWORD   CALLBACK    StopMsHookLL(LPVOID);
 LRESULT CALLBACK    MsHookProcLL(int, WPARAM, LPARAM);
-
-
 
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
@@ -152,7 +158,7 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 {
 	hInst = hInstance; // Store instance handle in our global variable
 
-	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME|WS_MAXIMIZEBOX),
+	HWND hWnd = CreateWindowW(szWindowClass, szTitle, WS_OVERLAPPEDWINDOW & ~(WS_THICKFRAME | WS_MAXIMIZEBOX),
 		CW_USEDEFAULT, 0, 1300, 600, nullptr, nullptr, hInstance, nullptr);
 
 	if (!hWnd)
@@ -162,6 +168,8 @@ BOOL InitInstance(HINSTANCE hInstance, int nCmdShow)
 
 	ShowWindow(hWnd, nCmdShow);
 	UpdateWindow(hWnd);
+
+
 
 	return TRUE;
 }
@@ -181,7 +189,9 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	switch (message)
 	{
 
-	case WM_CREATE:
+	case WM_CREATE:{
+
+		msPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
 
 		listbox = CreateWindowW(L"Listbox", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | WS_VSCROLL, 100, 10, 500, 500, hWnd, NULL, hInst, NULL);
 		CreateWindowW(L"Button", L"Start", WS_VISIBLE | WS_CHILD, 10, 10, 75, 23, hWnd, (HMENU)CMD_KB_HOOK_START, hInst, NULL);
@@ -189,17 +199,45 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 		CreateWindowW(L"Button", L"Start KB LL", WS_VISIBLE | WS_CHILD, 10, 70, 75, 23, hWnd, (HMENU)CMD_KB_LL_START, hInst, NULL);
 		CreateWindowW(L"Button", L"Stop KB LL", WS_VISIBLE | WS_CHILD, 10, 100, 75, 23, hWnd, (HMENU)CMD_KB_LL_STOP, hInst, NULL);
-		
+
 		CreateWindowW(L"Button", L"Start MS LL", WS_VISIBLE | WS_CHILD, 10, 130, 75, 23, hWnd, (HMENU)CMD_MS_LL_START, hInst, NULL);
 		CreateWindowW(L"Button", L"Stop MS LL", WS_VISIBLE | WS_CHILD, 10, 160, 75, 23, hWnd, (HMENU)CMD_MS_LL_STOP, hInst, NULL);
-		dc = GetDC(hWnd);
 
-		msTrace = CreateWindowW(L"Static",L"",WS_VISIBLE|WS_CHILD|SS_ETCHEDFRAME,800,250,192*2,108*2,hWnd,NULL,hInst,NULL);
-		msDc = GetDC(msTrace);
+
+
+		msTrace = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD | SS_ETCHEDFRAME, 800, 250, 192 * 2, 108 * 2, hWnd, NULL, hInst, NULL);
+
+
+		dc = GetDC(msTrace);
+		memoryDC = CreateCompatibleDC(dc);
+
+		RECT traceRect;
+		GetClientRect(msTrace, &traceRect);
+
+		memoryPictureTrace= CreateCompatibleBitmap(memoryDC, traceRect.right - traceRect.left, traceRect.bottom - traceRect.top);
+		SelectObject(memoryDC, memoryPictureTrace);
+
+		HBRUSH bgTrace = CreateSolidBrush(GetBkColor(dc));
+		FillRect(memoryDC, &traceRect, bgTrace);
+
+
+		msDc = GetDC(hWnd);
+		MSmemoryDC = CreateCompatibleDC(msDc);
+		RECT rect;
+		GetClientRect(hWnd, &rect);
+		
+		memoryPicture = CreateCompatibleBitmap(MSmemoryDC, rect.right - rect.left, rect.bottom - rect.top);
+
+
+		SelectObject(MSmemoryDC, memoryPicture);
+
+		HBRUSH bg = CreateSolidBrush(GetBkColor(msDc));
+		FillRect(MSmemoryDC, &rect, bg);
+
 
 		break;
 
-	
+	}
 	case WM_COMMAND:
 	{
 		int wmId = LOWORD(wParam);
@@ -214,7 +252,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			StopKbHook(NULL);
 
 			break;
-		
+
 		case CMD_KB_LL_START:
 			StartKbHookLL(NULL);
 			break;
@@ -245,13 +283,36 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		PAINTSTRUCT ps;
 		HDC hdc = BeginPaint(hWnd, &ps);
 		// TODO: Add any drawing code that uses hdc here...
+
+		RECT r;
+		GetClientRect(hWnd, &r);
+		BitBlt(
+			hdc,                // destination DC
+			0, 0,            // start point
+			r.right - r.left,  // width
+			r.bottom - r.top,  // height
+			MSmemoryDC,          // source DC
+			0, 0,              // start point (in source)
+			SRCCOPY            // copy mode
+		);
+
+
+		PAINTSTRUCT tracePs;
+		HDC tracehdc = BeginPaint(msTrace,&tracePs);
+		RECT traceR;
+		GetClientRect(msTrace, &traceR);
+
+		BitBlt(tracehdc,0, 0, traceR.right - traceR.left, traceR.bottom - traceR.top, memoryDC,0, 0,SRCCOPY );
+
+		EndPaint(msTrace, &tracePs);
 		EndPaint(hWnd, &ps);
+
 	}
 	break;
 	case WM_DESTROY:
 		PostQuitMessage(0);
-		ReleaseDC(hWnd,dc);
-		ReleaseDC(hWnd,msDc);
+		ReleaseDC(hWnd, dc);
+		ReleaseDC(hWnd, msDc);
 		break;
 	default:
 		return DefWindowProc(hWnd, message, wParam, lParam);
@@ -359,9 +420,6 @@ DWORD   CALLBACK    StartKbHookLL(LPVOID params) {
 	return 0;
 }
 
-
-
-
 DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
 	PROCESS_INFORMATION pInfo;
 	STARTUPINFO sInfo;
@@ -389,8 +447,6 @@ DWORD   CALLBACK    StopKbHookLL(LPVOID params) {
 
 	return 0;
 }
-
-
 
 void saveToFile(char* buff) {
 
@@ -421,7 +477,7 @@ LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 			if (buffCount >= 100) {
 				saveToFile(text);
-				strcpy(text,"");
+				strcpy(text, "");
 				buffCount = 0;
 			}
 
@@ -433,6 +489,8 @@ LRESULT CALLBACK    KbHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	return CallNextHookEx(kbLL, nCode, wParam, lParam);
 }
+
+
 
 DWORD   CALLBACK    StartMsHookLL(LPVOID param) {
 
@@ -485,17 +543,17 @@ DWORD   CALLBACK    StopMsHookLL(LPVOID param) {
 	return 0;
 }
 
+bool posInit = false;
 
-COORD pos;
-bool posInit=false;
-
-bool lclk=false;
+bool lclk = false;
 
 LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 
 	if (nCode == HC_ACTION) {
 
-			MOUSEHOOKSTRUCT mouseInfo = *((MOUSEHOOKSTRUCT*)lParam);
+		MOUSEHOOKSTRUCT mouseInfo = *((MOUSEHOOKSTRUCT*)lParam);
+			HPEN savedPen = (HPEN)SelectObject(msDc, msPen);
+			HPEN savedPenTrace = (HPEN)SelectObject(dc, msPen);
 
 		if (wParam == WM_MOUSEMOVE) {
 
@@ -504,44 +562,46 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 			//_snwprintf_s(str, MAX_LOADSTRING, L"%d %d", pos.X, pos.Y);
 			//SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
 
-			if (lclk) {
 
-				msPen=CreatePen(PS_SOLID,4, RGB(rand() % 255, rand() % 255, rand() % 255));
-			}
-			else {
-
-				msPen=CreatePen(PS_SOLID,1, RGB(rand() % 255, rand() % 255, rand() % 255));
-
-			}
+			
 
 			if (!posInit) {
 
-				pos.Y = mouseInfo.pt.y / 5;
-				pos.X = mouseInfo.pt.x / 5;
+				MoveToEx(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5, NULL);
 				posInit = true;
 			}
 
-			SelectObject(msDc, msPen);
-			MoveToEx(msDc,pos.X,pos.Y,NULL);
-			LineTo(msDc, mouseInfo.pt.x/5, mouseInfo.pt.y/5);
+			SelectObject(dc, msPen);
+			LineTo(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+			SelectObject(msDc, savedPenTrace);
+			savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+			LineTo(memoryDC, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
 
-			pos.Y = mouseInfo.pt.y/5;
-			pos.X = mouseInfo.pt.x/5;
-
-			SetPixel(dc, (mouseInfo.pt.x/5)+800, mouseInfo.pt.y/5,RGB(255,0,0));
-			SetPixel(dc, (mouseInfo.pt.x/5)+801, mouseInfo.pt.y/5,RGB(255,0,0));
-			SetPixel(dc, (mouseInfo.pt.x/5)+800, mouseInfo.pt.y/5+1,RGB(255,0,0));
-			SetPixel(dc, (mouseInfo.pt.x/5)+801, mouseInfo.pt.y/5+1,RGB(255,0,0));
 			
-			DeleteObject(msPen);
+			SetPixel(msDc, (mouseInfo.pt.x / 5) + 800, mouseInfo.pt.y / 5, RGB(255, 0, 0));
+			SetPixel(msDc, (mouseInfo.pt.x / 5) + 801, mouseInfo.pt.y / 5, RGB(255, 0, 0));
+			SetPixel(msDc, (mouseInfo.pt.x / 5) + 800, mouseInfo.pt.y / 5 + 1, RGB(255, 0, 0));
+			SetPixel(msDc, (mouseInfo.pt.x / 5) + 801, mouseInfo.pt.y / 5 + 1, RGB(255, 0, 0));
+			SelectObject(msDc, savedPen);
 
-			//f = fopen("file.txt", "at");
-			//fputc((char)keyInfo.vkCode, f);
+			savedPen = (HPEN)SelectObject(MSmemoryDC, msPen);
+			SetPixel(MSmemoryDC, (mouseInfo.pt.x / 5) + 800, mouseInfo.pt.y / 5, RGB(255, 0, 0));
+			SetPixel(MSmemoryDC, (mouseInfo.pt.x / 5) + 801, mouseInfo.pt.y / 5, RGB(255, 0, 0));
+			SetPixel(MSmemoryDC, (mouseInfo.pt.x / 5) + 800, mouseInfo.pt.y / 5 + 1, RGB(255, 0, 0));
+			SetPixel(MSmemoryDC, (mouseInfo.pt.x / 5) + 801, mouseInfo.pt.y / 5 + 1, RGB(255, 0, 0));
+
+		
+
+
+
 
 		}
-		if (wParam==WM_LBUTTONDOWN) {
+		if (wParam == WM_LBUTTONDOWN) {
 
-			Ellipse(msDc,  mouseInfo.pt.x/MS_SCALE_X-2,  mouseInfo.pt.y/ MS_SCALE_Y-2,  mouseInfo.pt.x/ MS_SCALE_X +2,  mouseInfo.pt.y/5+ MS_SCALE_Y+2);
+			Ellipse(dc, mouseInfo.pt.x / MS_SCALE_X - 4, mouseInfo.pt.y / MS_SCALE_Y - 2, mouseInfo.pt.x / MS_SCALE_X + 4, mouseInfo.pt.y / 5 + MS_SCALE_Y + 2);
+			savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+			Ellipse(memoryDC, mouseInfo.pt.x / MS_SCALE_X - 4, mouseInfo.pt.y / MS_SCALE_Y - 2, mouseInfo.pt.x / MS_SCALE_X + 4, mouseInfo.pt.y / 5 + MS_SCALE_Y + 2);
+
 			lclk = true;
 
 		}
@@ -554,29 +614,27 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 		}
 		if (wParam == WM_RBUTTONDOWN) {
 
-			Rectangle(msDc,  mouseInfo.pt.x/MS_SCALE_X-2,  mouseInfo.pt.y/ MS_SCALE_Y-2,  mouseInfo.pt.x/ MS_SCALE_X +2,  mouseInfo.pt.y/5+ MS_SCALE_Y+2);
-
+			Rectangle(dc, mouseInfo.pt.x / MS_SCALE_X - 4, mouseInfo.pt.y / MS_SCALE_Y - 2, mouseInfo.pt.x / MS_SCALE_X + 4, mouseInfo.pt.y / 5 + MS_SCALE_Y + 2);
+			savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+			Rectangle(memoryDC, mouseInfo.pt.x / MS_SCALE_X - 4, mouseInfo.pt.y / MS_SCALE_Y - 2, mouseInfo.pt.x / MS_SCALE_X + 4, mouseInfo.pt.y / 5 + MS_SCALE_Y + 2);
 
 		}
 
 		if (wParam == WM_MOUSEWHEEL) {
 
 
-			if (((int)wParam) >0) {
+			if (((int)wParam) > 0) {
 
-				AngleArc(msDc, mouseInfo.pt.x/ MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y,10,0,180);
-
-				AngleArc(msDc, mouseInfo.pt.x/ MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y,10,0,-180);
-				_snwprintf_s(str, MAX_LOADSTRING, L"%d %d %d %d", wParam, (int)wParam, GET_WHEEL_DELTA_WPARAM(lParam),lParam);
-				SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+				AngleArc(dc, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, 180);
+				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+				AngleArc(memoryDC, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, 180);
 			}
 			else
 			{
 
-				AngleArc(msDc, mouseInfo.pt.x/ MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y,10,0,-180);
-
-				_snwprintf_s(str, MAX_LOADSTRING, L"%d %d %d %d", wParam, (int)wParam, GET_WHEEL_DELTA_WPARAM(lParam),lParam);
-				SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
+				AngleArc(dc, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, -180);
+				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+				AngleArc(memoryDC, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, -180);
 
 			}
 
