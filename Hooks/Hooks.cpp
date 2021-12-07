@@ -573,7 +573,7 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 			else
 			{
 
-				//AngleArc(msDc, mouseInfo.pt.x/ MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y,10,0,-180);
+				AngleArc(msDc, mouseInfo.pt.x/ MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y,10,0,-180);
 
 				_snwprintf_s(str, MAX_LOADSTRING, L"%d %d %d %d", wParam, (int)wParam, GET_WHEEL_DELTA_WPARAM(lParam),lParam);
 				SendMessageW(listbox, LB_ADDSTRING, 0, (LPARAM)str);
