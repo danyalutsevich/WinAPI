@@ -35,5 +35,20 @@ WinAPI содержит предопределенные константы дл
 	GetModuleHandle(NULL), // дескриптор модуля (DLL / EXE)
 	0);
 
+--------------------------
 
+Мышь
+
+typedef struct tagMOUSEHOOKSTRUCT {
+  POINT     pt;
+  HWND      hwnd;
+  UINT      wHitTestCode;
+  ULONG_PTR dwExtraInfo;
+} MOUSEHOOKSTRUCT, *LPMOUSEHOOKSTRUCT, *PMOUSEHOOKSTRUCT;
+
+
+typedef struct tagPOINT {
+  LONG x;
+  LONG y;
+} POINT, *PPOINT;
 
