@@ -583,12 +583,25 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 				MoveToEx(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5, NULL);
 				posInit = true;
 			}
+			if (lclk) {
+				DeletePen(msPen);
+				msPen = CreatePen(PS_SOLID, 10, RGB(255, 0, 0));
+				SelectObject(dc, msPen);
+				LineTo(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+				SelectObject(msDc, savedPenTrace);
+				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+				LineTo(memoryDC, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+				msPen = CreatePen(PS_SOLID, 2, RGB(255, 0, 0));
+			}
+			else {
 
-			SelectObject(dc, msPen);
-			LineTo(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
-			SelectObject(msDc, savedPenTrace);
-			savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
-			LineTo(memoryDC, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+				SelectObject(dc, msPen);
+				LineTo(dc, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+				SelectObject(msDc, savedPenTrace);
+				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
+				LineTo(memoryDC, mouseInfo.pt.x / 5, mouseInfo.pt.y / 5);
+
+			}
 
 			
 			SetPixel(msDc, (mouseInfo.pt.x / 5) + 800, mouseInfo.pt.y / 5, RGB(255, 0, 0));
