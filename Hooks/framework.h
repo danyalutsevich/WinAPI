@@ -10,6 +10,7 @@
 // Windows Header Files
 #include <windows.h>
 #include <windowsx.h>
+#include <assert.h>
 #include <fstream>
 // C RunTime Header Files
 #include <stdlib.h>
