@@ -649,7 +649,9 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 		if (wParam == WM_MOUSEWHEEL) {
 
 
-			if (((int)wParam) > 0) {
+			MSLLHOOKSTRUCT msLLinfo = *((MSLLHOOKSTRUCT*)lParam);
+
+			if (((short)HIWORD(msLLinfo.mouseData)) == 120) {
 
 				AngleArc(dc, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, 180);
 				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
@@ -657,7 +659,6 @@ LRESULT CALLBACK    MsHookProcLL(int nCode, WPARAM wParam, LPARAM lParam) {
 			}
 			else
 			{
-
 				AngleArc(dc, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, -180);
 				savedPenTrace = (HPEN)SelectObject(memoryDC, msPen);
 				AngleArc(memoryDC, mouseInfo.pt.x / MS_SCALE_X, mouseInfo.pt.y / MS_SCALE_Y, 10, 0, -180);
