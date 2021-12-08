@@ -6,7 +6,7 @@
 
 #define MAX_LOADSTRING 100
 #define CMD_LISTBOX 1000
-
+#define CMD_BUTTON_SHOWWINDOW 1001
 
 // Global Variables:
 HINSTANCE hInst;                                // current instance
@@ -17,14 +17,20 @@ WCHAR szWindowClass[MAX_LOADSTRING];            // the main window class name
 ATOM                MyRegisterClass(HINSTANCE hInstance);
 BOOL                InitInstance(HINSTANCE, int);
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
-INT_PTR CALLBACK    About(HWND, UINT, WPARAM, LPARAM);
 
 DWORD CALLBACK CreateControls(LPVOID);
 DWORD CALLBACK ChangeMetricsInfo(LPVOID);
+
+LRESULT CALLBACK    WndProcCentered(HWND, UINT, WPARAM, LPARAM);
+void showWindowCentered(HINSTANCE, HWND );
 HWND Listbox;
 HWND indexConst;
 HWND mDesc;
 
+bool isCenteredReg=false;
+COORD screenSize;
+
+ATOM centeredWinAtom=0;
 
 struct Metrics {
 
@@ -37,11 +43,84 @@ struct Metrics {
 
 Metrics metrics[] = {
 
-	{56,L"SM_ARRANGE",L"The flags that specify how the system arranged minimized windows"},
 	{67,L"SM_CLEANBOOT",L"The value that specifies how the system is started"},
-	{80,L"SM_CMONITORS",L"The number of display monitors on a desktop."}
+	{56,L"SM_ARRANGE",L"The flags that specify how the system arranged minimized windows"},
+	{31, L"SM_CYSIZE ", L"The thickness of the sizing border around the perimeter of a window that can be resized, in pixels."},
+	{30, L"SM_CXSIZE", L"The width of a button in a window caption or title bar, in pixels."},
+	{29, L"SM_CYMIN", L"The minimum height of a window, in pixels."},
+	{28, L"SM_CXMIN", L"The minimum width of a window, in pixels."},
+	{20, L"SM_CYVSCROLL", L"The height of the arrow bitmap on a vertical scroll bar, in pixels."},
+	{17, L"SM_CYFULLSCREEN", L"The height of the client area for a full-screen window on the primary display monitor, in pixels."},
+	{16, L"SM_CXFULLSCREEN", L"The width of the client area for a full-screen window on the primary display monitor, in pixels"},
+	{6, L"SM_CYBORDER", L"The height of a 3-D border, in pixels. This is the 3-D counterpart of SM_CYBORDER."},
+	{5, L"SM_CXBORDER", L"The width of a window border, in pixels. This is equivalent to the SM_CXEDGE value for windows with the 3-D look."},
+	{2, L"SM_CXVSCROLL", L"The width of a vertical scroll bar, in pixels."},
+	{1, L"SM_CYSCREEN", L"The height of the screen of the primary display monitor, in pixels. "},
+	{0, L"SM_CXSCREEN", L"The width of the screen of the primary display monitor, in pixels"},
 
 };
+
+
+void showWindowCentered(HINSTANCE hInstance, HWND hWnd) {
+
+
+	hInst = hInstance;
+
+	if (!isCenteredReg) {
+
+		WNDCLASSEXW wcex;
+		ZeroMemory(&wcex, sizeof(WNDCLASSEXW));
+		wcex.cbSize = sizeof(WNDCLASSEX);
+		wcex.lpfnWndProc = WndProcCentered;
+		wcex.hInstance = hInst;
+		wcex.hbrBackground = CreateSolidBrush(COLOR_WINDOW + 1);
+		wcex.hCursor = LoadCursor(nullptr, IDC_ARROW);
+		wcex.lpszClassName = L"CenteredWindow";
+
+		if (!RegisterClassExW(&wcex)) {
+			MessageBoxW(hWnd, L"Register class error!", L"Error", MB_OK | MB_ICONERROR);
+			return;
+		}
+		isCenteredReg = TRUE;
+	}
+	screenSize.Y=GetSystemMetrics(SM_CYSCREEN);
+	screenSize.X=GetSystemMetrics(SM_CXSCREEN);
+	HWND centeredWindow = CreateWindowW(L"CenteredWindow", L"Centered", WS_OVERLAPPEDWINDOW, screenSize.X/2- (screenSize.X/8), screenSize.Y/2- (screenSize.Y / 8), screenSize.X / 4, screenSize.Y / 4, hWnd, NULL, hInst, 0);
+
+	ShowWindow(centeredWindow, SW_NORMAL);
+	UpdateWindow(centeredWindow);
+}
+
+LRESULT CALLBACK    WndProcCentered(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam) {
+
+	switch (message)
+	{
+	
+
+	case WM_COMMAND:
+	{
+		int wmId = LOWORD(wParam);
+
+		switch (wmId)
+		{
+
+
+
+
+		}
+	}
+	case WM_DESTROY:
+		//PostQuitMessage(0);
+		break;
+
+	default:
+		return DefWindowProc(hWnd, message, wParam, lParam);
+	}
+	return 0;
+}
+
+
+
 
 int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
 	_In_opt_ HINSTANCE hPrevInstance,
@@ -165,7 +244,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		int notificationCode = HIWORD(wParam);
 
 
-		if (notificationCode = CBN_SELCHANGE) {
+		if (notificationCode == CBN_SELCHANGE) {
 
 			CreateThread(NULL, 0, ChangeMetricsInfo, NULL, 0, NULL);
 			break;
@@ -174,13 +253,12 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		// Parse the menu selections:
 		switch (wmId)
 		{
-		case CMD_LISTBOX: {
+		case CMD_BUTTON_SHOWWINDOW: {
+			showWindowCentered(hInst,hWnd);
 
 			break;
 		}
-		case IDM_ABOUT:
-			DialogBox(hInst, MAKEINTRESOURCE(IDD_ABOUTBOX), hWnd, About);
-			break;
+		
 		case IDM_EXIT:
 			DestroyWindow(hWnd);
 			break;
@@ -206,36 +284,21 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	return 0;
 }
 
-// Message handler for about box.
-INT_PTR CALLBACK About(HWND hDlg, UINT message, WPARAM wParam, LPARAM lParam)
-{
-	UNREFERENCED_PARAMETER(lParam);
-	switch (message)
-	{
-	case WM_INITDIALOG:
-		return (INT_PTR)TRUE;
-
-	case WM_COMMAND:
-		if (LOWORD(wParam) == IDOK || LOWORD(wParam) == IDCANCEL)
-		{
-			EndDialog(hDlg, LOWORD(wParam));
-			return (INT_PTR)TRUE;
-		}
-		break;
-	}
-	return (INT_PTR)FALSE;
-}
 DWORD CALLBACK CreateControls(LPVOID params) {
 
 	HWND hWnd = *((HWND*)params);
 
 	char buff[100];
-
+	
 	Listbox = CreateWindowEx(0, L"Combobox", L"", WS_VISIBLE | WS_CHILD | WS_BORDER | CBS_DROPDOWNLIST, 10, 10, 150, 300, hWnd, (HMENU)CMD_LISTBOX, hInst, NULL);
 	mDesc = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD | WS_BORDER, 10, 40, 150, 200, hWnd, (HMENU)NULL, hInst, NULL);
 	indexConst = CreateWindowW(L"Static", L"", WS_VISIBLE | WS_CHILD | WS_BORDER, 300, 10, 150, 30, hWnd, (HMENU)NULL, hInst, NULL);
+	
+	CreateWindowW(L"Button", L"showWindow", WS_VISIBLE | WS_CHILD | WS_BORDER, 300, 150, 75, 23, hWnd, (HMENU)CMD_BUTTON_SHOWWINDOW, hInst, NULL);
 
-	for (int i = 0; i < 3; i++) {
+
+
+	for (int i = 0; i < sizeof(metrics)/sizeof(Metrics); i++) {
 
 		SendMessageW(Listbox, CB_ADDSTRING, 0, (LPARAM)metrics[i].indexConst);
 	}
@@ -251,7 +314,7 @@ DWORD CALLBACK ChangeMetricsInfo(LPVOID params) {
 	SendMessageW(mDesc, WM_SETTEXT, 0, (LPARAM)metrics[selectedIndex].description);
 
 	char buff[100];
-	_itoa_s(GetSystemMetrics(metrics[selectedIndex].nIndex),buff,10);
+	_itoa_s(GetSystemMetrics(metrics[selectedIndex].nIndex), buff, 10);
 
 	SendMessageA(indexConst, WM_SETTEXT, 0, (LPARAM)buff);
 
